@@ -1,0 +1,432 @@
+body {
+  background: url("../assets/PIC.png") no-repeat center center fixed;
+}
+
+.main-content {
+  margin-left: 230px;
+  margin-top: 70px;
+  padding: 25px;
+  width: calc(100% - 230px);
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.main-content h2 {
+  font-size: 22px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  color: black;
+}
+
+.btn-add {
+  background: #0ea5e9;
+  color: #fff;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 15px;
+  transition: background 0.2s ease;
+}
+
+.btn-add:hover {
+  background: #0284c7;
+}
+
+.table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  margin: 0 auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  color: black;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+table thead {
+  background: linear-gradient(180deg, #0ea5e9, #0284c7);
+}
+
+table th {
+  padding: 12px;
+  text-align: left;
+  color: white;
+  font-weight: 500;
+  border-bottom: 1px solid black;
+}
+
+table th:last-child {
+  text-align: center;
+}
+
+table td {
+  padding: 12px;
+  border-bottom: 1px solid black;
+}
+
+table td:last-child {
+  text-align: center;
+}
+
+.btn-edit,
+.btn-delete,
+.btn-view {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 13px;
+  cursor: pointer;
+  margin-right: 5px;
+  margin-top: 4px;
+}
+
+.btn-edit {
+  background: black;
+  color: white;
+}
+
+.btn-delete {
+  background: black;
+  color: white;
+}
+
+.btn-view {
+  background: black;
+  color: white;
+}
+
+.btn-edit:hover,
+.btn-delete:hover,
+.btn-view:hover {
+  opacity: 0.9;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(4px);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+  animation: fadeIn 0.3s ease;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.modal-content {
+  background: linear-gradient(180deg, #0ea5e9, #0284c7);
+  padding: 25px 30px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 400px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  animation: slideUp 0.3s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-content h3 {
+  margin-bottom: 10px;
+  font-size: 20px;
+  font-weight: 500;
+  color: white;
+  text-align: center;
+}
+
+.modal-content input,
+.modal-content select {
+  padding: 10px 12px;
+  border: none;
+  border-radius: 6px;
+  background: white;
+  color: black;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+
+
+
+.modal-content button {
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.modal-content button[name="add"],
+.modal-content button[name="edit"],
+.modal-content button[name="add_service"],
+.modal-content button[name="update_service"] {
+  background: black;
+  color: white;
+}
+
+.modal-content button[type="button"] {
+  background: black;
+  color: white;
+}
+
+.modal-content button:hover {
+  opacity: 0.9;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 700px) {
+  table {
+    font-size: 12px;
+  }
+
+  table th, table td {
+    padding: 8px 6px;
+    white-space: nowrap;
+  }
+
+  .btn-edit, .btn-delete {
+    font-size: 11px;
+    padding: 4px 6px;
+  }
+}
+
+@media (max-width: 500px) {
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody tr {
+    margin-bottom: 15px;
+    background: white;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  td {
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+  }
+
+  td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: black;
+  }
+}
+
+@media (max-width: 900px) {
+  .main-content {
+    margin-left: 0;
+    margin-top: 70px;
+    padding: 15px;
+    width: 100%;
+  }
+
+  .topbar {
+    left: 0;
+    width: 100%;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: -230px;
+    top: 0;
+    height: 100%;
+    transition: left 0.3s ease;
+  }
+
+  .sidebar.active {
+    left: 0;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+  }
+}
+
+.expandable {
+  display: none;
+  transition: all 0.3s ease;
+}
+
+.items-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.items-header h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: white;
+}
+
+.items-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.items-actions .add-item,
+.items-actions .remove-item {
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.item-content {
+  background: white;
+  padding: 5px 5px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 400px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  animation: slideUp 0.3s ease;
+  margin-bottom: 10px;
+}
+
+
+
+.item-content input,
+.item-content select {
+  padding: 10px 12px;
+  border: none;
+  border-radius: 6px;
+  background: white;
+  color: black;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+
+
+
+.modal-content button {
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.item-list {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+label{
+  margin-bottom: -15px;
+}
+ /* --- CLEAN & WORKING MOBILE SIDEBAR FIX --- */
+@media (max-width: 768px) {
+  /* 1. Sidebar Hiding & Slide-out Logic */
+  .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 260px !important;
+    height: 100vh !important;
+    z-index: 999999 !important;
+    transform: translateX(-100%) !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: transform 0.3s ease-in-out, visibility 0.3s ease-in-out, opacity 0.3s ease-in-out !important;
+  }
+
+  /* Kapag pinindot ang menu at pumasok ang .active class */
+  .sidebar.active {
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  /* 2. Top Header Adjustments */
+  .topbar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 8px 10px !important;
+    flex-wrap: nowrap !important;
+    gap: 5px !important;
+    height: auto !important;
+    min-height: 60px;
+  }
+
+  .topbar-left {
+    gap: 8px !important;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .topbar .logo, 
+  .clinic-title-top,
+  .logo {
+    font-size: 11px !important;
+    max-width: 55% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .topbar div:last-child, 
+  .topbar span, 
+  .topbar h3 {
+    font-size: 10px !important;
+    white-space: nowrap !important;
+  }
+
+  /* 3. Main Content Spacing */
+  .main-content {
+    margin-top: 65px !important;
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: 8px !important;
+  }
+}

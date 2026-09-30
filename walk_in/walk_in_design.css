@@ -1,0 +1,215 @@
+body {
+  background: url("../assets/PIC.png") no-repeat center center fixed;
+}
+
+.main-content {
+  margin-left: 230px;
+  margin-top: 70px;
+  padding: 25px;
+  width: calc(100% - 230px);
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.main-content h2 {
+  font-size: 22px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  color: black;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.settings-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 25px 0 10px;
+  color: #0ea5e9;
+}
+
+label {
+  color: #374151;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.settings-input {
+  width: 100%;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-bottom: 18px;  
+  transition: 0.2s ease;
+}
+
+.settings-input:focus {
+  outline: none;
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 3px rgba(14,165,233,0.25);
+}
+
+.password-wrapper {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.password-wrapper input {
+  padding-right: 35px;
+}
+
+.password-wrapper .toggle-password {
+  position: absolute;
+  top: 38%;
+  right: 10px;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+#selectedServicesContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  margin-bottom: 8px;
+  align-items: center;
+  text-align: center;
+}
+
+/* ✅ Minimal pero premium */
+.service-tag {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #d0e7f7;
+  padding: 8px 12px;
+  border-radius: 10px;
+  gap: 8px;
+  cursor: pointer;
+  transition: 0.22s ease;
+}
+
+.service-tag:hover {
+  border-color: #0ea5e9;
+  background: #f3faff;
+  transform: translateY(-2px);
+}
+
+/* ✅ Service Name */
+.service-name {
+  font-weight: 600;
+  color: #0f4c75;
+  font-size: 0.9rem;
+}
+
+/* ✅ Price */
+.service-price {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0ea5e9;
+}
+
+/* ✅ Remove X (minimal, elegant) */
+.remove-x {
+  margin-left: auto;
+  color: #ef4444;
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 0 4px;
+  transition: 0.2s ease;
+}
+
+.remove-x:hover {
+  color: #b91c1c;
+  transform: scale(1.25);
+}
+
+/* ✅ Save Button */
+.settings-btn {
+  width: fit-content;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  background: #111;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 5px;
+  transition: opacity 0.2s ease;
+}
+
+.settings-btn:hover {
+  opacity: 0.85;
+}
+
+
+/* ✅ Responsive */
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: 200px;
+    width: calc(100% - 200px);
+  }
+}
+
+@media (max-width: 900px) {
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 18px;
+  }
+
+  .table-wrapper {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 600px) {
+  .main-content h2 {
+    font-size: 18px;
+  }
+
+  .settings-input {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+
+  .settings-btn {
+    width: 100%;
+  }
+}
+
+.input-with-checkbox {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.right-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.right-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}

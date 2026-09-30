@@ -1,0 +1,649 @@
+body {
+  background: url("../assets/PIC.png") no-repeat center center fixed;
+}
+
+.main-content {
+  margin-left: 230px;
+  margin-top: 70px;
+  padding: 25px;
+  width: calc(100% - 230px);
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.main-content h2 {
+  font-size: 22px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  color: black;
+}
+
+.btn-add {
+  background: #0ea5e9;
+  color: #fff;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 15px;
+  transition: background 0.2s ease;
+}
+
+.btn-add:hover {
+  background: #0284c7;
+}
+
+.table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  margin: 0 auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  color: black;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+table thead {
+  background: linear-gradient(180deg, #0ea5e9, #0284c7);
+}
+
+table th {
+  padding: 12px;
+  text-align: left;
+  color: white;
+  font-weight: 500;
+  border-bottom: 1px solid black;
+}
+
+table td {
+  padding: 12px;
+  border-bottom: 1px solid black;
+}
+
+.btn-edit,
+.btn-delete {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 13px;
+  cursor: pointer;
+  margin-right: 5px;
+  margin-top: 4px;
+}
+
+.btn-edit {
+  background: black;
+  color: white;
+}
+
+.btn-delete {
+  background: black;
+  color: white;
+}
+
+.btn-edit:hover,
+.btn-delete:hover {
+  opacity: 0.9;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(4px);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+  animation: fadeIn 0.3s ease;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white; /* Changed to white for better contrast with inputs */
+  padding: 30px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 1000px;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.modal-header h3 {
+  color: #0ea5e9;
+  margin-top: 0;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+.modal-content h3 {
+  margin-bottom: 10px;
+  font-size: 20px;
+  font-weight: 500;
+  color: #0ea5e9;
+  text-align: center;
+}
+
+/* Reset input styles for the modal */
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  color: black;
+  font-size: 14px;
+  transition: box-shadow 0.2s ease;
+  resize: vertical;
+  width: 100%; /* Ensure inputs fill their grid cell */
+  box-sizing: border-box;
+  margin-bottom: 0; /* Let grid handle spacing */
+}
+
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus {
+  border-color: #0ea5e9;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.modal-content textarea {
+  min-height: 80px;
+  max-height: 200px;
+  line-height: 1.5;
+}
+
+.modal-content button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  width: auto; /* Prevent full width buttons */
+  min-width: 100px;
+}
+
+.modal-content button[name="add"],
+.modal-content button[name="edit"] {
+  background: black;
+  color: white;
+}
+
+.modal-content button[type="button"] {
+  background: black;
+  color: white;
+}
+
+.modal-content button:hover {
+  opacity: 0.9;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 700px) {
+  table {
+    font-size: 12px;
+  }
+
+  table th, table td {
+    padding: 8px 6px;
+    white-space: nowrap;
+  }
+
+  .btn-edit, .btn-delete {
+    font-size: 11px;
+    padding: 4px 6px;
+  }
+}
+
+@media (max-width: 500px) {
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody tr {
+    margin-bottom: 15px;
+    background: white;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  td {
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+  }
+
+  td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: black;
+  }
+}
+
+@media (max-width: 900px) {
+  .main-content {
+    margin-left: 0;
+    margin-top: 70px;
+    padding: 15px;
+    width: 100%;
+  }
+
+  .topbar {
+    left: 0;
+    width: 100%;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: -230px;
+    top: 0;
+    height: 100%;
+    transition: left 0.3s ease;
+  }
+
+  .sidebar.active {
+    left: 0;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+  }
+}
+
+
+
+.input-with-checkbox {
+  position: relative;
+  width: 100%;
+}
+
+.input-with-checkbox input[type="text"] {
+  width: 100%;
+  padding-right: 65px; /* space for checkbox + label */
+  border-radius: 6px;
+  background: white;
+  color: black;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.input-with-checkbox .inside-checkbox {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: black;
+  cursor: pointer;
+}
+
+.input-with-checkbox .inside-checkbox input[type="checkbox"] {
+  accent-color: #0ea5e9; /* matches your blue theme */
+  cursor: pointer;
+  transform: scale(1.1);
+}
+
+fieldset {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 12px;
+  background-color: white;
+  font-size: 14px;
+}
+fieldset legend {
+  font-weight: 10;
+  color: white;
+}
+
+fieldset label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 10px;
+  margin-bottom: 6px;
+  color: grey;
+}
+fieldset input[type="checkbox"] {
+  accent-color: #0ea5e9;
+  transform: scale(1.1);
+}
+fieldset {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 6px;
+}
+
+.password-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 35px;
+  box-sizing: border-box;
+}
+
+.password-wrapper .toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  user-select: none;
+}
+.password-wrapper span {
+  color: black;
+  background: white;
+  padding-left: 20%;
+}
+
+/* Availability Modal Styles */
+.btn-manage {
+  background: #0099ff;
+  color: white;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 13px;
+  cursor: pointer;
+  margin-right: 5px;
+  margin-top: 4px;
+  display: inline-block;
+}
+
+.btn-manage:hover {
+  opacity: 0.9;
+}
+
+.availability-modal {
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.availability-modal h3 {
+  font-size: 1.5rem;
+  color: #1565c0;
+  margin-bottom: 15px;
+}
+
+.dentist-name-display {
+  background: #e3f2fd;
+  padding: 10px 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  font-weight: 500;
+  color: #1565c0;
+}
+
+.availability-container,
+.time-slots-container {
+  margin-bottom: 25px;
+}
+
+.availability-container h4,
+.time-slots-container h4 {
+  font-size: 1rem;
+  margin-bottom: 12px;
+  color: #333;
+  font-weight: 600;
+}
+
+.availability-fieldset {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 15px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.availability-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+
+.availability-label input[type="checkbox"] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  accent-color: #0099ff;
+}
+
+.time-slots-list {
+  background: #f5f5f5;
+  border-radius: 5px;
+  padding: 12px;
+  min-height: 80px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-start;
+  align-content: flex-start;
+}
+
+.time-slot-item {
+  background: #0099ff;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.info-text {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.availability-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+.btn-save,
+.btn-cancel {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-save {
+  background: #0099ff;
+  color: white;
+  transition: background 0.2s ease;
+}
+
+.btn-save:hover {
+  background: #0078cc;
+}
+
+.btn-cancel {
+  background: #ccc;
+  color: #333;
+  transition: background 0.2s ease;
+}
+
+.btn-cancel:hover {
+  background: #999;
+}
+
+/* --- New Grid Layout Styles --- */
+
+.section-title {
+    font-size: 1.1rem;
+    color: #0284c7;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns for horizontal view */
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #555;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Input with Checkbox (Middle Name) */
+.input-with-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.input-with-checkbox input[type="text"] {
+  flex: 1;
+}
+
+.inside-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  font-size: 0.9em;
+  margin-bottom: 0;
+  color: #333;
+}
+
+.inside-checkbox input[type="checkbox"] {
+  accent-color: #0ea5e9;
+  cursor: pointer;
+}
+
+/* Password Toggle */
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  padding-right: 50px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #555;
+  user-select: none;
+}
+
+/* Schedule Styles */
+.schedule-wrapper {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 15px;
+    background: #f8fafc;
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.day-schedule-row {
+    background: white;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    border: 1px solid #eee;
+}
+
+.day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 5px;
+}
+
+.select-all-label {
+    font-size: 0.85rem;
+    color: #0ea5e9;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 900px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .modal-content {
+    padding: 15px;
+  }
+}

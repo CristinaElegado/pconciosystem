@@ -1,0 +1,126 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0px;
+  background-color: rgba(0, 170, 255, 0.7);
+  color: white;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.logo a {
+  margin-left: 10px;
+  font-size: 24px;
+  font-weight: bold;
+  text-decoration: none;
+  color: inherit;
+}
+
+.logo span {
+  color: #ffdd00;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+nav ul li a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+nav ul li a:hover {
+  color: #ffdd00;
+  text-decoration: none;
+}
+
+.sidebar {
+    position: fixed;
+    top: 77px;
+    left: -250px;
+    width: 250px;
+    height: calc(100% - 60px);
+    background: rgba(0, 170, 255, 0.7);
+    transition: left 0.3s ease;
+    z-index: 1000;
+    padding-top: 10px;
+}
+
+.sidebar.active {
+    left: 0;
+}
+
+.sidebar a {
+    padding: 12px 20px;
+    text-decoration: none;
+    font-size: 18px;
+    color: white;
+    display: block;
+    transition: 0.2s;
+}
+
+.sidebar a:hover {
+    background: #ffdd00;
+}
+
+.menu-btn {
+    margin-left: 10px;
+    margin-top: -10px;
+    font-size: 20px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: white;
+}
+
+button:hover {
+    color: #ffdd00;
+}
+
+.logout-btn {
+    margin-right: 10px;
+    font-size: 20px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: white;
+}
+
+.submenu .submenu-content {
+    display: none;
+    flex-direction: column;
+    margin-left: 15px;
+}
+
+.submenu .submenu-content a {
+    font-size: 16px;
+    padding: 8px 20px;
+}
+
+.submenu .submenu-content.show {
+    display: flex;
+}
+
+

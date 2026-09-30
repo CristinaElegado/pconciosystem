@@ -1,0 +1,241 @@
+/* =====================================================
+   audit_trail_design.css
+   Styling for the Audit Trail page (admin only)
+   ===================================================== */
+
+/* ── Page wrapper ── */
+.main-content {
+  padding: 28px 32px;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* ── Page header ── */
+.at-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.at-header h2 {
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.at-header h2 i {
+  color: #0ea5e9;
+}
+
+/* ── Filter bar ── */
+.at-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.at-filters select,
+.at-filters input[type="text"],
+.at-filters input[type="date"] {
+  padding: 8px 12px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-family: 'Poppins', sans-serif;
+  color: #334155;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.at-filters select:focus,
+.at-filters input:focus {
+  border-color: #0ea5e9;
+}
+
+.at-filters .btn-clear {
+  padding: 8px 16px;
+  background: #f1f5f9;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  color: #475569;
+  transition: background 0.2s;
+}
+
+.at-filters .btn-clear:hover {
+  background: #e2e8f0;
+}
+
+/* ── Stats cards ── */
+.at-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.at-stat-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  border-left: 4px solid #0ea5e9;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.at-stat-card.admin-card  { border-left-color: #6366f1; }
+.at-stat-card.dentist-card{ border-left-color: #0ea5e9; }
+.at-stat-card.staff-card  { border-left-color: #10b981; }
+.at-stat-card.patient-card{ border-left-color: #f59e0b; }
+.at-stat-card.total-card  { border-left-color: #64748b; }
+
+.at-stat-card .stat-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.at-stat-card .stat-number {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+/* ── Table wrapper ── */
+.table-wrapper {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+}
+
+.table-wrapper table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table-wrapper thead th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1.5px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.table-wrapper tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.15s;
+}
+
+.table-wrapper tbody tr:hover {
+  background: #f8fafc;
+}
+
+.table-wrapper tbody td {
+  padding: 12px 16px;
+  color: #334155;
+  vertical-align: middle;
+}
+
+/* ── Role badge ── */
+.role-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.role-badge.admin   { background: #ede9fe; color: #6d28d9; }
+.role-badge.dentist { background: #e0f2fe; color: #0369a1; }
+.role-badge.staff   { background: #dcfce7; color: #15803d; }
+.role-badge.patient { background: #fef9c3; color: #92400e; }
+
+/* ── Empty state ── */
+.at-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+}
+
+.at-empty i {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  display: block;
+}
+
+/* ── Pagination ── */
+.at-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid #f1f5f9;
+  background: #fff;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.at-pagination .page-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.at-pagination button {
+  padding: 6px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #334155;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.at-pagination button:hover:not(:disabled) {
+  background: #e0f2fe;
+  border-color: #0ea5e9;
+  color: #0369a1;
+}
+
+.at-pagination button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.at-pagination button.active {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+  color: #fff;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .main-content  { padding: 18px 14px; }
+  .at-header     { flex-direction: column; align-items: flex-start; }
+  .at-filters    { flex-direction: column; align-items: stretch; }
+  .at-filters select,
+  .at-filters input { width: 100%; }
+  .at-stats      { grid-template-columns: 1fr 1fr; }
+}
