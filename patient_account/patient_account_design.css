@@ -1,4 +1,4 @@
-.main-content {
+﻿.main-content {
   margin-left: 230px;
   margin-top: 70px;
   padding: 25px;
@@ -14,22 +14,8 @@
   color: black;
 }
 
-.btn-add {
-  background: #0ea5e9;
-  color: #fff;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  margin-bottom: 15px;
-  transition: background 0.2s ease;
-}
 
-.btn-add:hover {
-  background: #0284c7;
-}
+
 
 .table-wrapper {
   width: 100%;
@@ -70,31 +56,10 @@ table td {
   border-bottom: 1px solid black;
 }
 
-.btn-edit,
-.btn-delete {
-  padding: 6px 10px;
-  border: none;
-  border-radius: 5px;
-  font-size: 13px;
-  cursor: pointer;
-  margin-right: 5px;
-  margin-top: 4px;
-}
 
-.btn-edit {
-  background: black;
-  color: white;
-}
 
-.btn-delete {
-  background: black;
-  color: white;
-}
 
-.btn-edit:hover,
-.btn-delete:hover {
-  opacity: 0.9;
-}
+
 
 .modal {
   position: fixed;
@@ -113,39 +78,92 @@ table td {
 }
 
 .modal-content {
-  background: linear-gradient(180deg, #0ea5e9, #0284c7);
-  padding: 25px 30px;
+  background: white;
+  padding: 30px;
   border-radius: 12px;
   width: 100%;
-  max-width: 400px;
-  color: white;
+  max-width: 900px;
+  color: #333;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 0;
   animation: slideUp 0.3s ease;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
 .modal-content h3 {
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
   font-size: 20px;
-  font-weight: 500;
-  color: white;
+  font-weight: 600;
+  color: #0ea5e9;
   text-align: center;
+}
+
+.modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.modal-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.modal-full {
+  margin-bottom: 16px;
+}
+
+.modal-content label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  margin-bottom: 5px;
 }
 
 .modal-content input,
 .modal-content select {
-  padding: 10px 12px;
-  border: none;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
   border-radius: 6px;
   background: white;
-  color: black;
+  color: #333;
   font-size: 14px;
-  transition: background 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 0;
 }
 
+.modal-content input:focus,
+.modal-content select:focus {
+  outline: none;
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
+}
+
+.modal-section-title {
+  color: #0ea5e9;
+  font-weight: 600;
+  font-size: 15px;
+  margin: 10px 0 15px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
 
 .modal-content button {
   padding: 10px;
@@ -158,17 +176,18 @@ table td {
 
 .modal-content button[name="add"],
 .modal-content button[name="edit"] {
-  background: black;
+  background: #0ea5e9;
   color: white;
 }
 
 .modal-content button[type="button"] {
-  background: black;
+  background: #0ea5e9;
   color: white;
 }
 
 .modal-content button:hover {
-  opacity: 0.9;
+  background: #0284c7 !important;
+  opacity: 1;
 }
 
 @keyframes fadeIn {
@@ -191,10 +210,6 @@ table td {
     white-space: nowrap;
   }
 
-  .btn-edit, .btn-delete {
-    font-size: 11px;
-    padding: 4px 6px;
-  }
 }
 
 @media (max-width: 500px) {
@@ -286,4 +301,58 @@ table td {
 
 label{
   margin-bottom: -15px;
+}
+
+
+/* ============================================================
+   RESPONSIVE — 768px MOBILE (patient account)
+   ============================================================ */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0 !important;
+    margin-top: 65px !important;
+    padding: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  table {
+    min-width: 600px !important;
+  }
+
+  .modal-content {
+    width: 95% !important;
+    max-width: 95% !important;
+    padding: 16px !important;
+  }
+
+  /* Modal grid collapses to 1 column */
+  .modal-grid,
+  .modal-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  input, select, textarea {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  button {
+    font-size: 13px !important;
+  }
+
+  /* Modal action buttons stack */
+  .modal-buttons {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .modal-buttons button {
+    width: 100% !important;
+  }
 }

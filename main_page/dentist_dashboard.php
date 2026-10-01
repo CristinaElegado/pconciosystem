@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
 
@@ -85,10 +85,11 @@ $my_schedule = $stmt->fetch(PDO::FETCH_ASSOC);
         // Listen for cross-tab logout
         window.addEventListener('storage', function(e) {
             if (e.key === 'logoutEvent') {
-                alert('You have been logged out from another tab.');
+                showAlert('You have been logged out from another tab.');
                 window.location.href = 'pconcio_main.php';
             }
         });
     </script>
 </body>
 </html>
+

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
 include __DIR__ . '/../miscellaneous/auth_check.php';
@@ -80,12 +80,12 @@ include __DIR__ . '/../miscellaneous/sidebar.php';
   <style>
     /* Red color for delete buttons */
     .btn-delete {
-      background-color: #dc3545 !important;
+      background-color: #0ea5e9 !important;
       color: white !important;
       border: none !important;
     }
     .btn-delete:hover {
-      background-color: #c82333 !important;
+      background-color: #0284c7 !important;
     }
   </style>
 </head>
@@ -198,3 +198,6 @@ include __DIR__ . '/../miscellaneous/sidebar.php';
   </script>
 </body>
 </html>
+
+
+

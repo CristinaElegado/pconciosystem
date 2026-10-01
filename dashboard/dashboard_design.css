@@ -258,3 +258,82 @@ table tbody tr:hover td { background: #f8fafc; }
 }
 
 label { margin-bottom: -15px; }
+
+
+/* ============================================================
+   RESPONSIVE — 768px MOBILE (dashboard)
+   ============================================================ */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0 !important;
+    margin-top: 65px !important;
+    padding: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Dashboard cards: 2-column grid on tablet/mobile */
+  .dashboard-cards,
+  .dashboard-cards-row1,
+  .dashboard-cards-row2 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  /* Split row becomes single column */
+  .dashboard-row-split {
+    flex-direction: column !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Charts scale to full width */
+  .chart-wrapper {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+
+  .charts-row {
+    flex-direction: column !important;
+  }
+
+  .charts-row .chart-wrapper {
+    min-width: unset !important;
+    width: 100% !important;
+  }
+
+  .table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .table-wrapper table {
+    min-width: 600px !important;
+  }
+
+  input, select, textarea {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  button {
+    font-size: 13px !important;
+  }
+}
+
+/* 480px: single column cards */
+@media (max-width: 480px) {
+  .dashboard-cards,
+  .dashboard-cards-row1,
+  .dashboard-cards-row2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-row-split {
+    flex-direction: column !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .chart-wrapper {
+    width: 100% !important;
+  }
+}

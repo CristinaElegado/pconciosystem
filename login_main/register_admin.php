@@ -26,9 +26,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Invalid na email address.';
     } elseif (strlen($password) < 8) {
-        $error = 'Ang password ay dapat hindi bababa sa 8 characters.';
+        $error = 'Password must be at least 8 characters.';
     } elseif ($password !== $confirm) {
-        $error = 'Hindi magkapareho ang passwords.';
+        $error = 'Passwords do not match.';
     } else {
         try {
             // Double-check na wala pang admin (race condition protection)

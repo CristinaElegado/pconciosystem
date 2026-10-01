@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
 include __DIR__ . '/../miscellaneous/auth_check.php';
@@ -484,10 +484,10 @@ include __DIR__ . '/../miscellaneous/sidebar.php';
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert(data.message);
+                        showAlert(data.message);
                         location.reload();
                     } else {
-                        alert('Error: ' + data.message);
+                        showAlert('Error: ' + data.message);
                     }
                 });
         }, { title: 'Delete Coverage', icon: 'delete', danger: true, okText: 'Delete' });
@@ -501,10 +501,10 @@ include __DIR__ . '/../miscellaneous/sidebar.php';
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(data.message);
+                    showAlert(data.message);
                     location.reload();
                 } else {
-                    alert('Error: ' + data.message);
+                    showAlert('Error: ' + data.message);
                 }
             });
     });
@@ -529,3 +529,5 @@ include __DIR__ . '/../miscellaneous/sidebar.php';
 
 </body>
 </html>
+
+

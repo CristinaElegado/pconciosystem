@@ -2,6 +2,36 @@
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
 include __DIR__ . '/../miscellaneous/auth_check.php';
+include __DIR__ . '/../miscellaneous/log_audit.php';
+
+// ✅ FUNCTION: Generate next Delivery ID for a given date
+// Format: DEL-YYYYMMDD-001, DEL-YYYYMMDD-002, ...
+function generateDeliveryId($pdo, $delivery_date) {
+    $dateStr = date('Ymd', strtotime($delivery_date));
+    $prefix  = 'DEL-' . $dateStr . '-';
+    $stmt = $pdo->prepare("SELECT delivery_id FROM item_inventory WHERE delivery_id LIKE ? ORDER BY delivery_id DESC LIMIT 1");
+    $stmt->execute([$prefix . '%']);
+    $last = $stmt->fetchColumn();
+    if ($last) {
+        $lastNum = (int) substr($last, strrpos($last, '-') + 1);
+        $nextNum = $lastNum + 1;
+    } else {
+        $nextNum = 1;
+    }
+    return $prefix . str_pad($nextNum, 3, '0', STR_PAD_LEFT);
+}
+
+// ✅ AJAX: Return next delivery ID preview for a given date
+if (isset($_GET['ajax_next_delivery_id']) && isset($_GET['date'])) {
+    header('Content-Type: application/json');
+    $date = $_GET['date'];
+    if (!strtotime($date)) {
+        echo json_encode(['id' => '']);
+        exit;
+    }
+    echo json_encode(['id' => generateDeliveryId($pdo, $date)]);
+    exit;
+}
 
 // âœ… Fetch Staff List (First Name, Middle Name, Last Name) mula sa staff_accounts
 $staff_stmt = $pdo->prepare("SELECT id, CONCAT(first_name, ' ', IFNULL(middle_name, ''), ' ', last_name) AS full_name 
@@ -11,27 +41,26 @@ $staff_stmt = $pdo->prepare("SELECT id, CONCAT(first_name, ' ', IFNULL(middle_na
 $staff_stmt->execute();
 $staff_list = $staff_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// âœ… ADD ITEM LOGIC
+// ✅ ADD ITEM LOGIC
 if (isset($_POST['add'])) {
   $item_name = strtoupper(trim(preg_replace('/\s+/', ' ', $_POST['item_name'])));
   $item_type = strtoupper(trim($_POST['item_type']));
   $quantity = (int)$_POST['quantity'];
   $unit = trim($_POST['unit']);
   $price = floatval($_POST['price']);
-  $delivery_id = trim($_POST['delivery_id']);
   $supplier = trim(preg_replace('/\s+/', ' ', $_POST['supplier']));
   $delivery_date = !empty($_POST['delivery_date']) ? $_POST['delivery_date'] : NULL;
   $batch_lot_number = trim($_POST['batch_lot_number']);
   $received_by = !empty($_POST['received_by']) ? $_POST['received_by'] : NULL;
   $expiration_date = ($item_type === 'MEDICINE' && !empty($_POST['expiration_date'])) ? $_POST['expiration_date'] : NULL;
 
+  // Auto-generate Delivery ID based on delivery date (or today if no date)
+  $id_date = $delivery_date ?? date('Y-m-d');
+  $delivery_id = generateDeliveryId($pdo, $id_date);
+
   // Backend Validations
   if (empty($item_name) || !preg_match("/^(?=.*[A-Z])[A-Z0-9\s]{1,50}$/", $item_name)) {
     echo "<script>alert('Item name must be up to 50 characters, can contain numbers and letters, but cannot be numbers-only or empty.'); window.location='inventory.php';</script>";
-    exit;
-  }
-  if (!preg_match("/^\d{1,50}$/", $delivery_id)) {
-    echo "<script>alert('Delivery ID must be numbers only and up to 50 characters.'); window.location='inventory.php';</script>";
     exit;
   }
   if (empty($supplier) || !preg_match("/^[a-zA-Z\s]{1,50}$/", $supplier)) {
@@ -56,11 +85,12 @@ if (isset($_POST['add'])) {
 
   $stmt = $pdo->prepare("INSERT INTO item_inventory (item_name, item_type, quantity, unit, price, delivery_id, supplier, delivery_date, batch_lot_number, received_by, expiration_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
   $stmt->execute([$item_name, $item_type, $quantity, $unit, $price, $delivery_id, $supplier, $delivery_date, $batch_lot_number, $received_by, $expiration_date]);
+  log_audit($pdo, $_SESSION['user_type'] ?? 'staff', $_SESSION['username'] ?? 'Unknown', 'Added Inventory Item', "Item: {$item_name} | Type: {$item_type} | Qty: {$quantity} | Delivery ID: {$delivery_id}");
   header("Location: inventory.php");
   exit;
 }
 
-// âœ… EDIT ITEM LOGIC
+// ✅ EDIT ITEM LOGIC
 if (isset($_POST['edit'])) {
   $item_name = strtoupper(trim(preg_replace('/\s+/', ' ', $_POST['item_name'])));
   $item_type = strtoupper(trim($_POST['item_type']));
@@ -80,8 +110,9 @@ if (isset($_POST['edit'])) {
     echo "<script>alert('Item name must be up to 50 characters, can contain numbers and letters, but cannot be numbers-only or empty.'); window.location='inventory.php';</script>";
     exit;
   }
-  if (!preg_match("/^\d{1,50}$/", $delivery_id)) {
-    echo "<script>alert('Delivery ID must be numbers only and up to 50 characters.'); window.location='inventory.php';</script>";
+  // Accept both legacy numeric IDs and new DEL-YYYYMMDD-XXX format
+  if (!preg_match("/^(\d{1,50}|DEL-\d{8}-\d{3})$/", $delivery_id)) {
+    echo "<script>alert('Invalid Delivery ID format.'); window.location='inventory.php';</script>";
     exit;
   }
   if (empty($supplier) || !preg_match("/^[a-zA-Z\s]{1,50}$/", $supplier)) {
@@ -99,13 +130,19 @@ if (isset($_POST['edit'])) {
 
   $stmt = $pdo->prepare("UPDATE item_inventory SET item_name=?, item_type=?, quantity=?, unit=?, price=?, delivery_id=?, supplier=?, delivery_date=?, batch_lot_number=?, received_by=?, expiration_date=? WHERE id=?");
   $stmt->execute([$item_name, $item_type, $quantity, $unit, $price, $delivery_id, $supplier, $delivery_date, $batch_lot_number, $received_by, $expiration_date, $id]);
+  log_audit($pdo, $_SESSION['user_type'] ?? 'staff', $_SESSION['username'] ?? 'Unknown', 'Updated Inventory Item', "Item: {$item_name} | Type: {$item_type} | Qty: {$quantity}");
   header("Location: inventory.php");
   exit;
 }
 
 if (isset($_POST['delete'])) {
+  // Fetch name before deleting
+  $fetchItem = $pdo->prepare("SELECT item_name FROM item_inventory WHERE id=?");
+  $fetchItem->execute([$_POST['id']]);
+  $deletedItem = $fetchItem->fetchColumn() ?: 'ID:'.$_POST['id'];
   $stmt = $pdo->prepare("DELETE FROM item_inventory WHERE id=?");
   $stmt->execute([$_POST['id']]);
+  log_audit($pdo, $_SESSION['user_type'] ?? 'staff', $_SESSION['username'] ?? 'Unknown', 'Deleted Inventory Item', "Item: {$deletedItem}");
   header("Location: inventory.php");
   exit;
 }
@@ -365,14 +402,16 @@ function buildQueryPreserve($extra = []) {
     <form method="post" class="modal-content">
       <h3>Add Item</h3>
 
-      <label>Delivery ID:</label>
-      <input type="text" name="delivery_id" class="val-delivery-id" placeholder="Delivery ID" maxlength="50" required>
+      <label>Delivery ID: <small style="color:#64748b; font-weight:normal;">(auto-generated)</small></label>
+      <input type="text" id="addDeliveryIdDisplay" value="Will be generated after selecting a delivery date"
+             style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:6px; padding:8px; width:100%; box-sizing:border-box; font-style:italic;"
+             readonly disabled>
 
       <label>Supplier:</label>
       <input type="text" name="supplier" class="val-supplier" placeholder="Supplier Name" maxlength="50" required>
 
       <label>Delivery Date:</label>
-      <input type="date" name="delivery_date" id="addDeliveryDate">
+      <input type="date" name="delivery_date" id="addDeliveryDate" onchange="fetchNextDeliveryId(this.value)">
 
       <label>Batch / Lot Number:</label>
       <input type="text" name="batch_lot_number" class="val-batch" placeholder="Batch or Lot No." maxlength="50">
@@ -499,6 +538,24 @@ function buildQueryPreserve($extra = []) {
     }
   }
 
+  // Fetch next auto-generated Delivery ID from server based on selected date
+  function fetchNextDeliveryId(dateVal) {
+      const display = document.getElementById('addDeliveryIdDisplay');
+      if (!dateVal) {
+          display.value = 'Will be generated after selecting a delivery date';
+          return;
+      }
+      display.value = 'Generating...';
+      fetch('inventory.php?ajax_next_delivery_id=1&date=' + encodeURIComponent(dateVal))
+          .then(r => r.json())
+          .then(data => {
+              display.value = data.id || 'Error generating ID';
+          })
+          .catch(() => {
+              display.value = 'Error generating ID';
+          });
+  }
+
   // Real-time Input Validation Scripts
   document.addEventListener('input', function(e) {
     // 1. Item Name: Allow letters, numbers, and spaces, max 50 chars (bawal special characters)
@@ -506,22 +563,17 @@ function buildQueryPreserve($extra = []) {
       e.target.value = e.target.value.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, ' ').slice(0, 50).toUpperCase();
     }
 
-    // 2. Delivery ID: Numbers only, max 50 length
-    if (e.target.classList.contains('val-delivery-id')) {
-      e.target.value = e.target.value.replace(/\D/g, '').slice(0, 50);
-    }
-
-    // 3. Supplier: Letters and spaces only, max 50 length
+    // 2. Supplier: Letters and spaces only, max 50 length
     if (e.target.classList.contains('val-supplier')) {
       e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').slice(0, 50);
     }
 
-    // 4. Batch / Lot Number: Numbers only, max 50 length
+    // 3. Batch / Lot Number: Numbers only, max 50 length
     if (e.target.classList.contains('val-batch')) {
       e.target.value = e.target.value.replace(/\D/g, '').slice(0, 50);
     }
 
-    // 5. Quantity: Prevent negative numbers or decimals
+    // 4. Quantity: Prevent negative numbers or decimals
     if (e.target.classList.contains('val-qty')) {
       e.target.value = e.target.value.replace(/[^0-9]/g, '');
       if (e.target.value < 0) e.target.value = 0;
@@ -535,12 +587,11 @@ function buildQueryPreserve($extra = []) {
     const expInput = document.getElementById(inputId);
 
     if (typeSelect.value.toUpperCase() === 'MEDICINE') {
-      expGroup.style.display = 'block';
-      expInput.required = true;
+      if (expGroup) expGroup.style.display = 'block';
+      if (expInput) expInput.required = true;
     } else {
-      expGroup.style.display = 'none';
-      expInput.required = false;
-      expInput.value = ''; 
+      if (expGroup) expGroup.style.display = 'none';
+      if (expInput) { expInput.required = false; expInput.value = ''; }
     }
   }
 
@@ -548,6 +599,9 @@ function buildQueryPreserve($extra = []) {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('addDeliveryDate').min = today;
     document.getElementById('addExpInput').min = today;
+    // Reset delivery ID display and date
+    document.getElementById('addDeliveryDate').value = '';
+    document.getElementById('addDeliveryIdDisplay').value = 'Will be generated after selecting a delivery date';
     document.getElementById('addModal').style.display = 'flex';
   }
 
@@ -574,3 +628,5 @@ function buildQueryPreserve($extra = []) {
 </script>
 </body>
 </html>
+
+

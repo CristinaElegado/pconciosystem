@@ -43,7 +43,7 @@
             <td><?= $service_names ?></td>
             <td><?= number_format($total_price, 2) ?></td>
             <td><?= $row['date_visit'] ?></td>
-            <td><?= date("H:i", strtotime($row['time_visit'])) ?></td>
+            <td><?= date("g:i A", strtotime($row['time_visit'])) ?></td>
             <td><?= htmlspecialchars($row['dentist_name']) ?></td>
             <td><?= $row['status'] ?></td>
             <td><?= htmlspecialchars($row['payment_method'] ?? 'Cash') ?></td>
@@ -65,17 +65,18 @@
                     <?php 
                         $xray_file = basename($row['dental_toothxray']);
                         $doc_root = $_SERVER['DOCUMENT_ROOT'];
+                        $xray_path = false;
 
-                        if (file_exists($doc_root . "/pconcio_dental/patient_side/uploads/" . $xray_file)) {
-                            $xray_path = "/pconcio_dental/patient_side/uploads/" . htmlspecialchars($xray_file);
-                        } elseif (file_exists($doc_root . "/pconcio_dental/patient_side/uploads/xrays/" . $xray_file)) {
-                            $xray_path = "/pconcio_dental/patient_side/uploads/xrays/" . htmlspecialchars($xray_file);
-                        } elseif (file_exists($doc_root . "/pconcio_dental/uploads/" . $xray_file)) {
-                            $xray_path = "/pconcio_dental/uploads/" . htmlspecialchars($xray_file);
-                        } elseif (file_exists($doc_root . "/pconcio_dental/uploads/xrays/" . $xray_file)) {
-                            $xray_path = "/pconcio_dental/uploads/xrays/" . htmlspecialchars($xray_file);
-                        } else {
-                            $xray_path = false;
+                        $possible_paths = [
+                            "/Mariategue-DentalClinic/uploads/xrays/" . $xray_file,
+                            "/Mariategue-DentalClinic/uploads/" . $xray_file,
+                        ];
+
+                        foreach ($possible_paths as $p) {
+                            if (file_exists($doc_root . $p)) {
+                                $xray_path = htmlspecialchars($p);
+                                break;
+                            }
                         }
                     ?>
 

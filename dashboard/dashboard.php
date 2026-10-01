@@ -218,7 +218,7 @@ include __DIR__ . '/../miscellaneous/sidebar.php';
               <?php foreach ($todaysAppointments as $row): ?>
                 <tr>
                   <td data-label="Patient Name"><?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?></td>
-                  <td data-label="Time"><?php echo htmlspecialchars($row['time_visit']); ?></td>
+                  <td data-label="Time"><?php echo date('g:i A', strtotime($row['time_visit'])); ?></td>
                   <td data-label="Dentist"><?php echo htmlspecialchars($row['dentist_first'] . ' ' . $row['dentist_last']); ?></td>
                   <td data-label="Status"><?php echo htmlspecialchars($row['status']); ?></td>
                 </tr>
@@ -288,15 +288,32 @@ include __DIR__ . '/../miscellaneous/sidebar.php';
 
   <script>
   const ctx1 = document.getElementById('servicesChart').getContext('2d');
+  const serviceBarColors = [
+    'rgba(14, 165, 233, 0.8)',   // blue      - 1st bar
+    'rgba(34, 197, 94, 0.8)',    // green     - 2nd bar
+    'rgba(249, 115, 22, 0.8)',   // orange    - 3rd bar
+    'rgba(168, 85, 247, 0.8)',   // purple    - 4th bar
+    'rgba(239, 68, 68, 0.8)',    // red       - 5th bar
+    'rgba(234, 179, 8, 0.8)',    // yellow    - 6th bar
+  ];
+  const serviceBarBorders = [
+    'rgba(2, 132, 199, 1)',
+    'rgba(22, 163, 74, 1)',
+    'rgba(234, 88, 12, 1)',
+    'rgba(147, 51, 234, 1)',
+    'rgba(220, 38, 38, 1)',
+    'rgba(202, 138, 4, 1)',
+  ];
+  const servicesData = <?php echo $servicesCounts; ?>;
   new Chart(ctx1, {
     type: 'bar',
     data: {
       labels: <?php echo $servicesLabels; ?>,
       datasets: [{
         label: 'Usage Count',
-        data: <?php echo $servicesCounts; ?>,
-        backgroundColor: 'rgba(14, 165, 233, 0.7)',
-        borderColor: 'rgba(2, 132, 199, 1)',
+        data: servicesData,
+        backgroundColor: servicesData.map((_, i) => serviceBarColors[i % serviceBarColors.length]),
+        borderColor: servicesData.map((_, i) => serviceBarBorders[i % serviceBarBorders.length]),
         borderWidth: 2,
         borderRadius: 4,
         borderSkipped: false,

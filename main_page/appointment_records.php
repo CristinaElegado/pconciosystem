@@ -552,7 +552,7 @@ function getStatusLabel($status) {
                             <div class="card-date">
                                 <i class="fas fa-calendar"></i> 
                                 <?php echo date('M d, Y', strtotime($appt['date_visit'])); ?> at 
-                                <?php echo htmlspecialchars($appt['time_visit']); ?>
+                                <?php echo date('g:i A', strtotime($appt['time_visit'])); ?>
                             </div>
                         </div>
                         <span class="<?php echo getStatusBadgeClass($appt['status']); ?>">

@@ -179,6 +179,78 @@
 
   // Close on Escape key
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeConfirmDialog();
+    if (e.key === 'Escape') {
+      closeConfirmDialog();
+      closeAlertDialog();
+    }
+  });
+
+  // ============================================================
+  // GLOBAL ALERT DIALOG  — replaces native alert()
+  // Usage: showAlert('Your message here');
+  //        showAlert('Message', { title: 'Warning', icon: 'danger' });
+  // ============================================================
+  function showAlert(message, options) {
+    options = options || {};
+    const iconKey  = (options.icon  || 'warning').toLowerCase();
+    const iconHtml = _confirmIconMap[iconKey] || _confirmIconMap['warning'];
+    document.getElementById('alertIcon').innerHTML    = iconHtml;
+    document.getElementById('alertTitle').textContent = options.title || 'Notice';
+    document.getElementById('alertMessage').textContent = message;
+    document.getElementById('customAlertOverlay').classList.add('show');
+  }
+
+  function closeAlertDialog() {
+    document.getElementById('customAlertOverlay').classList.remove('show');
+    const cb = document.getElementById('customAlertOverlay')._afterClose;
+    if (typeof cb === 'function') { cb(); document.getElementById('customAlertOverlay')._afterClose = null; }
+  }
+
+  document.getElementById('customAlertOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeAlertDialog();
   });
 </script>
+
+<!-- ============================================================
+     GLOBAL ALERT DIALOG (styled replacement for alert())
+     ============================================================ -->
+<style>
+  #customAlertOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.50);
+    z-index: 9999999;
+    justify-content: center;
+    align-items: center;
+  }
+  #customAlertOverlay.show { display: flex; }
+  #customAlertBox {
+    background: #fff;
+    border-radius: 16px;
+    padding: 36px 32px 28px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+    animation: confirmPopIn 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  #customAlertBox .alert-icon { font-size: 2.8rem; margin-bottom: 14px; line-height: 1; }
+  #customAlertBox h3 { margin: 0 0 10px; color: #1e293b; font-size: 1.1rem; font-weight: 600; font-family: 'Poppins', sans-serif; }
+  #customAlertBox p  { color: #64748b; font-size: 0.93rem; margin-bottom: 24px; line-height: 1.55; font-family: 'Poppins', sans-serif; }
+  #alertOkBtn {
+    background: #0ea5e9; color: #fff; border: none;
+    padding: 10px 34px; border-radius: 10px;
+    font-size: 0.95rem; font-weight: 600; cursor: pointer;
+    font-family: 'Poppins', sans-serif; transition: background 0.18s;
+  }
+  #alertOkBtn:hover { background: #0284c7; }
+</style>
+<div id="customAlertOverlay">
+  <div id="customAlertBox">
+    <div class="alert-icon" id="alertIcon"><i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i></div>
+    <h3 id="alertTitle">Notice</h3>
+    <p id="alertMessage"></p>
+    <button id="alertOkBtn" onclick="closeAlertDialog()">OK</button>
+  </div>
+</div>

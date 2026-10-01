@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // hmo_management.php - Final Complete Code with Blue Tab Theme, HMO Member ID Fix & Notifications
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
@@ -490,13 +490,13 @@ include __DIR__ . '/../miscellaneous/sidebar.php';
         })
         .then(data => {
             if (data.success) {
-                alert(data.message);
+                showAlert(data.message);
                 location.reload();
             } else {
-                alert('Error: ' + data.message);
+                showAlert('Error: ' + data.message);
             }
         })
-        .catch(err => { alert('An error occurred: ' + err.message); });
+        .catch(err => { showAlert('An error occurred: ' + err.message); });
     });
 
     document.getElementById('searchInput').addEventListener('keyup', function() {
@@ -514,3 +514,4 @@ include __DIR__ . '/../miscellaneous/sidebar.php';
 
 </body>
 </html>
+

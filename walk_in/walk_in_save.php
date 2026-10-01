@@ -6,6 +6,7 @@ error_reporting(E_ALL);
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
 include __DIR__ . '/../miscellaneous/auth_check.php';
+include __DIR__ . '/../miscellaneous/log_audit.php';
 
 if (isset($_POST['save_walkin'])) {
     try {
@@ -93,6 +94,11 @@ if (isset($_POST['save_walkin'])) {
 
         // I-set ang success message sa session para sa popup banner
         $_SESSION['success_message'] = "Walk-in saved successfully!";
+
+        // Log the audit
+        $actor = $_SESSION['username'] ?? 'Unknown';
+        $actor_type = $_SESSION['user_type'] ?? 'staff';
+        log_audit($pdo, $actor_type, $actor, 'Added Walk-In Patient', "Patient: {$first_name} {$last_name} | Service IDs: {$service_ids}");
 
         // Bumalik sa walk_in.php
         header("Location: walk_in.php");

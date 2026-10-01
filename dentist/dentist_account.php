@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 session_start();
@@ -44,6 +44,7 @@ try {
 } catch (PDOException $e) {}
 
 include __DIR__ . '/../miscellaneous/auth_check.php';
+include __DIR__ . '/../miscellaneous/log_audit.php';
 
 $active_dentists = $pdo->query("
   SELECT 
@@ -151,7 +152,7 @@ if (isset($_POST['add'])) {
           $start = (isset($_POST[$day . '_start']) && $_POST[$day . '_start'] !== '') ? $_POST[$day . '_start'] : null;
           $end   = (isset($_POST[$day . '_end'])   && $_POST[$day . '_end']   !== '') ? $_POST[$day . '_end']   : null;
 
-          // Validate time range: 07:00–17:00
+          // PHP backend validation: 07:00–17:00
           if ($start !== null && ($start < '07:00' || $start > '17:00')) {
               echo "<script>alert('Time In for " . ucfirst($day) . " must be between 7:00 AM and 5:00 PM.'); window.history.back();</script>";
               exit;
@@ -185,6 +186,7 @@ if (isset($_POST['add'])) {
   ");
   $stmt->execute(array_merge([$dentist_id], array_values($schedule_flags), array_values($schedule_times)));
 
+  log_audit($pdo, $_SESSION['user_type'] ?? 'admin', $_SESSION['username'] ?? 'Unknown', 'Added Dentist Account', "Dentist: {$first_name} {$last_name} | Email: {$email}");
   header("Location: dentist_account.php");
   exit;
 }
@@ -259,6 +261,7 @@ if (isset($_POST['edit'])) {
   ");
   $stmt->execute([$first_name, $middle_name, $last_name, $birthday, $address, $phone, $email, $is_active, $employment_type, $id]);
 
+  log_audit($pdo, $_SESSION['user_type'] ?? 'admin', $_SESSION['username'] ?? 'Unknown', 'Updated Dentist Account', "Dentist: {$first_name} {$last_name} | Email: {$email}");
   header("Location: dentist_account.php");
   exit;
 }
@@ -275,7 +278,7 @@ if (isset($_POST['update_availability'])) {
             $start = (isset($_POST[$day . '_start']) && $_POST[$day . '_start'] !== '') ? $_POST[$day . '_start'] : null;
             $end   = (isset($_POST[$day . '_end'])   && $_POST[$day . '_end']   !== '') ? $_POST[$day . '_end']   : null;
 
-            // Validate time range: 07:00–17:00
+            // PHP backend validation: 07:00–17:00
             if ($start !== null && ($start < '07:00' || $start > '17:00')) {
                 echo "<script>alert('Time In for " . ucfirst($day) . " must be between 7:00 AM and 5:00 PM.'); window.history.back();</script>";
                 exit;
@@ -331,7 +334,11 @@ if (isset($_POST['update_availability'])) {
 // DELETE
 if (isset($_POST['delete'])) {
     $id = $_POST['id'];
+    $dName = $pdo->prepare("SELECT CONCAT(first_name,' ',last_name) FROM dentist_accounts WHERE id=?");
+    $dName->execute([$id]);
+    $dentistName = $dName->fetchColumn() ?: 'ID:'.$id;
     $pdo->prepare("UPDATE dentist_accounts SET is_deleted=1 WHERE id=?")->execute([$id]);
+    log_audit($pdo, $_SESSION['user_type'] ?? 'admin', $_SESSION['username'] ?? 'Unknown', 'Deactivated Dentist Account', "Dentist: {$dentistName}");
     header("Location: dentist_account.php");
     exit;
 }
@@ -339,7 +346,11 @@ if (isset($_POST['delete'])) {
 // RESTORE
 if (isset($_POST['restore'])) {
     $id = $_POST['id'];
+    $dName = $pdo->prepare("SELECT CONCAT(first_name,' ',last_name) FROM dentist_accounts WHERE id=?");
+    $dName->execute([$id]);
+    $dentistName = $dName->fetchColumn() ?: 'ID:'.$id;
     $pdo->prepare("UPDATE dentist_accounts SET is_deleted=0 WHERE id=?")->execute([$id]);
+    log_audit($pdo, $_SESSION['user_type'] ?? 'admin', $_SESSION['username'] ?? 'Unknown', 'Restored Dentist Account', "Dentist: {$dentistName}");
     header("Location: dentist_account.php");
     exit;
 }
@@ -347,9 +358,13 @@ if (isset($_POST['restore'])) {
 // HARD DELETE
 if (isset($_POST['hard_delete'])) {
     $id = $_POST['id'];
+    $dName = $pdo->prepare("SELECT CONCAT(first_name,' ',last_name) FROM dentist_accounts WHERE id=?");
+    $dName->execute([$id]);
+    $dentistName = $dName->fetchColumn() ?: 'ID:'.$id;
     $pdo->prepare("DELETE FROM dentist_schedule WHERE dentist_id=?")->execute([$id]);
     $pdo->prepare("DELETE FROM dentist_time_schedules WHERE dentist_id=?")->execute([$id]);
     $pdo->prepare("DELETE FROM dentist_accounts WHERE id=?")->execute([$id]);
+    log_audit($pdo, $_SESSION['user_type'] ?? 'admin', $_SESSION['username'] ?? 'Unknown', 'Permanently Deleted Dentist Account', "Dentist: {$dentistName}");
     header("Location: dentist_account.php");
     exit;
 }
@@ -365,8 +380,8 @@ $maxDate = date('Y-m-d', strtotime('-18 years'));
     .availability-modal .availability-label,
     .availability-modal .slot-checkbox-item,
     .availability-modal .info-text { color: black !important; }
-    .btn-delete, .btn-cancel { background-color: #dc3545 !important; color: white !important; }
-    .btn-delete:hover, .btn-cancel:hover { background-color: #c82333 !important; }
+    .btn-delete, .btn-cancel { background-color: #0ea5e9 !important; color: white !important; }
+    .btn-delete:hover, .btn-cancel:hover { background-color: #0284c7 !important; }
     .day-schedule-row { margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
     .time-input { padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; width: 100%; max-width: 120px; }
 
@@ -471,19 +486,21 @@ $maxDate = date('Y-m-d', strtotime('-18 years'));
           <td data-label="Schedule">
             <?php
               $days = [];
-              foreach (['monday','tuesday','wednesday','thursday','friday','saturday'] as $day)
+              foreach (['monday','tuesday','wednesday','thursday','friday','saturday','sunday'] as $day)
                 if ($row[$day]) $days[] = ucfirst($day);
               echo $days ? implode(', ', $days) : 'None';
             ?>
           </td>
           <td data-label="Actions">
-              <button class="btn-edit" onclick='openEdit(<?= json_encode($row) ?>)'>Edit</button>
-              <button class="btn-manage" onclick='openAvailability(<?= htmlspecialchars(json_encode($row), ENT_QUOTES, "UTF-8") ?>)'>Manage Availability</button>
-              <form method="post" style="display:inline;" id="dentistDeleteForm_<?= $row['id'] ?>">
+            <div style="display:flex; flex-direction:column; gap:6px; width:140px;">
+              <button class="btn-edit" style="width:100% !important;" onclick='openEdit(<?= json_encode($row) ?>)'>Edit</button>
+              <button class="btn-manage" style="width:100% !important;" onclick='openAvailability(<?= htmlspecialchars(json_encode($row), ENT_QUOTES, "UTF-8") ?>)'>Manage Availability</button>
+              <form method="post" id="dentistDeleteForm_<?= $row['id'] ?>">
                   <input type="hidden" name="id" value="<?= $row['id'] ?>">
                   <input type="hidden" name="delete" value="1">
-                  <button type="button" class="btn-delete" onclick="showConfirmDialog('Move this dentist to deleted accounts?', function(){ document.getElementById('dentistDeleteForm_<?= $row['id'] ?>').submit(); }, { title: 'Delete Dentist', icon: 'delete', danger: true, okText: 'Delete' })">Delete</button>
+                  <button type="button" class="btn-delete" style="width:100% !important;" onclick="showConfirmDialog('Move this dentist to deleted accounts?', function(){ document.getElementById('dentistDeleteForm_<?= $row['id'] ?>').submit(); }, { title: 'Delete Dentist', icon: 'delete', danger: true, okText: 'Delete' })">Delete</button>
               </form>
+            </div>
           </td>
         </tr>
       <?php endforeach; ?>
@@ -530,7 +547,7 @@ $maxDate = date('Y-m-d', strtotime('-18 years'));
           <td data-label="Schedule">
             <?php
               $days = [];
-              foreach (['monday','tuesday','wednesday','thursday','friday','saturday'] as $day)
+              foreach (['monday','tuesday','wednesday','thursday','friday','saturday','sunday'] as $day)
                 if ($row[$day]) $days[] = ucfirst($day);
               echo $days ? implode(', ', $days) : 'None';
             ?>
@@ -539,7 +556,7 @@ $maxDate = date('Y-m-d', strtotime('-18 years'));
               <form method="post" style="display:inline;" id="dentistRestoreForm_<?= $row['id'] ?>">
                   <input type="hidden" name="id" value="<?= $row['id'] ?>">
                   <input type="hidden" name="restore" value="1">
-                  <button type="button" class="btn-manage" style="background-color: #f59e0b; border:none; padding:5px 10px; border-radius:4px; color:white; cursor:pointer;" onclick="showConfirmDialog('Restore this dentist?', function(){ document.getElementById('dentistRestoreForm_<?= $row['id'] ?>').submit(); }, { title: 'Restore Dentist', icon: 'restore', okText: 'Restore' })">Restore</button>
+                  <button type="button" class="btn-manage" onclick="showConfirmDialog('Restore this dentist?', function(){ document.getElementById('dentistRestoreForm_<?= $row['id'] ?>').submit(); }, { title: 'Restore Dentist', icon: 'restore', okText: 'Restore' })">Restore</button>
               </form>
               <form method="post" style="display:inline;" id="dentistHardDeleteForm_<?= $row['id'] ?>">
                   <input type="hidden" name="id" value="<?= $row['id'] ?>">
@@ -630,13 +647,13 @@ $maxDate = date('Y-m-d', strtotime('-18 years'));
                 </div>
                 <div style="flex: 2; display: flex; gap: 10px; align-items: center;">
                     <label>In:</label>
-                    <input type="time" name="<?= $day ?>_start" id="add_<?= $day ?>_start" class="time-input" min="07:00" max="17:00" disabled required>
+                    <input type="time" name="<?= $day ?>_start" id="add_<?= $day ?>_start" class="time-input" min="07:00" max="17:00" disabled>
                     <label>Out:</label>
-                    <input type="time" name="<?= $day ?>_end" id="add_<?= $day ?>_end" class="time-input" min="07:00" max="17:00" disabled required>
+                    <input type="time" name="<?= $day ?>_end" id="add_<?= $day ?>_end" class="time-input" min="07:00" max="17:00" disabled>
                 </div>
             </div>
         <?php endforeach; ?>
-        <!-- Sunday hidden but still submitted as 0 so DB stays consistent -->
+        <!-- Sunday is always closed — hidden field submits 0 -->
         <input type="hidden" name="sunday_active" value="0">
       </div>
     </div>
@@ -730,13 +747,13 @@ $maxDate = date('Y-m-d', strtotime('-18 years'));
                 </div>
                 <div style="flex: 2; display: flex; gap: 10px; align-items: center;">
                     <label>In:</label>
-                    <input type="time" name="<?= $day ?>_start" id="avail_<?= $day ?>_start" class="time-input" min="07:00" max="17:00" disabled required>
+                    <input type="time" name="<?= $day ?>_start" id="avail_<?= $day ?>_start" class="time-input" min="07:00" max="17:00" disabled>
                     <label>Out:</label>
-                    <input type="time" name="<?= $day ?>_end" id="avail_<?= $day ?>_end" class="time-input" min="07:00" max="17:00" disabled required>
+                    <input type="time" name="<?= $day ?>_end" id="avail_<?= $day ?>_end" class="time-input" min="07:00" max="17:00" disabled>
                 </div>
             </div>
         <?php endforeach; ?>
-        <!-- Sunday hidden but still submitted as 0 so DB stays consistent -->
+        <!-- Sunday is always closed — hidden field submits 0 -->
         <input type="hidden" name="sunday_active" value="0">
     </div>
 
@@ -750,7 +767,7 @@ $maxDate = date('Y-m-d', strtotime('-18 years'));
 <script>
   window.addEventListener('storage', function(e) {
       if (e.key === 'logoutEvent') {
-          alert('You have been logged out from another tab.');
+          showAlert('You have been logged out from another tab.');
           window.location.href = '../main_page/pconcio_main.php';
       }
   });
@@ -767,10 +784,10 @@ $maxDate = date('Y-m-d', strtotime('-18 years'));
       if (!input.value) return;
       if (input.value < '07:00') {
           input.value = '07:00';
-          alert('Pinakamaagang oras ay 7:00 AM lamang. (Minimum: 7:00 AM)');
+          showAlert('Minimum time is 7:00 AM.');
       } else if (input.value > '17:00') {
           input.value = '17:00';
-          alert('Pinakahuli na oras ay 5:00 PM lamang. (Maximum: 5:00 PM)');
+          showAlert('Maximum time is 5:00 PM.');
       }
   }
 
@@ -784,42 +801,43 @@ $maxDate = date('Y-m-d', strtotime('-18 years'));
       document.querySelectorAll('input[type="time"]').forEach(attachTimeEnforcer);
   });
 
-  // Validate all enabled time inputs in a form before submitting
+  // Validate all active (checked) days in a form before submitting
   function validateTimeInputsInForm(formEl) {
       const days = ['monday','tuesday','wednesday','thursday','friday','saturday'];
       for (const day of days) {
+          const cbEl    = formEl.querySelector('[name="' + day + '_active"]');
           const startEl = formEl.querySelector('[name="' + day + '_start"]');
           const endEl   = formEl.querySelector('[name="' + day + '_end"]');
-          const cbEl    = formEl.querySelector('[name="' + day + '_active"]');
 
           // Only validate if the day is checked/active
           if (!cbEl || !cbEl.checked) continue;
 
           const start = startEl ? startEl.value : '';
           const end   = endEl   ? endEl.value   : '';
+          const dayLabel = day.charAt(0).toUpperCase() + day.slice(1);
 
           if (!start) {
-              alert('Pakiusap mag-lagay ng Time In para sa ' + day.charAt(0).toUpperCase() + day.slice(1) + '.');
+              showAlert('Please enter Time In for ' + dayLabel + '.');
               if (startEl) startEl.focus();
               return false;
           }
           if (!end) {
-              alert('Pakiusap mag-lagay ng Time Out para sa ' + day.charAt(0).toUpperCase() + day.slice(1) + '.');
+              showAlert('Please enter Time Out for ' + dayLabel + '.');
               if (endEl) endEl.focus();
               return false;
           }
           if (start < '07:00' || start > '17:00') {
-              alert('Time In para sa ' + day.charAt(0).toUpperCase() + day.slice(1) + ' ay dapat 7:00 AM hanggang 5:00 PM lamang.');
+              showAlert('Time In for ' + dayLabel + ' must be between 7:00 AM and 5:00 PM.');
               if (startEl) { startEl.value = ''; startEl.focus(); }
               return false;
           }
           if (end < '07:00' || end > '17:00') {
-              alert('Time Out para sa ' + day.charAt(0).toUpperCase() + day.slice(1) + ' ay dapat 7:00 AM hanggang 5:00 PM lamang.');
+              showAlert('Time Out for ' + dayLabel + ' must be between 7:00 AM and 5:00 PM.');
               if (endEl) { endEl.value = ''; endEl.focus(); }
               return false;
           }
           if (end <= start) {
-              alert('Time Out para sa ' + day.charAt(0).toUpperCase() + day.slice(1) + ' ay dapat mas late kaysa sa Time In.');
+              showAlert('Time Out for ' + dayLabel + ' must be later than Time In.');
               if (endEl) { endEl.value = ''; endEl.focus(); }
               return false;
           }
@@ -828,23 +846,20 @@ $maxDate = date('Y-m-d', strtotime('-18 years'));
   }
 
   function toggleAddInputs(day, isChecked) {
-      const s = document.getElementById('add_' + day + '_start');
-      const e = document.getElementById('add_' + day + '_end');
-      s.disabled = !isChecked;
-      e.disabled = !isChecked;
+      document.getElementById('add_' + day + '_start').disabled = !isChecked;
+      document.getElementById('add_' + day + '_end').disabled = !isChecked;
   }
 
   function toggleTimeInputs(day, isChecked) {
-      const s = document.getElementById('avail_' + day + '_start');
-      const e = document.getElementById('avail_' + day + '_end');
-      s.disabled = !isChecked;
-      e.disabled = !isChecked;
+      document.getElementById('avail_' + day + '_start').disabled = !isChecked;
+      document.getElementById('avail_' + day + '_end').disabled = !isChecked;
   }
 
   function openAvailability(data) {
     document.getElementById('availDentistId').value = data.id;
     document.getElementById('dentistNameDisplay').textContent = 'Dentist: ' + data.first_name + ' ' + data.last_name;
     
+    // Monday to Saturday only — Sunday is not editable
     const days = ['monday','tuesday','wednesday','thursday','friday','saturday'];
     
     days.forEach(day => {
@@ -947,11 +962,11 @@ $maxDate = date('Y-m-d', strtotime('-18 years'));
     let p = document.getElementById("addPassword").value;
     let c = document.getElementById("addConfirmPassword").value;
     if (p !== c) {
-      alert("Password and Confirm Password do not match!");
+      showAlert("Password and Confirm Password do not match!");
       return false;
     }
 
-    // Validate time range before submitting
+    // Validate time range 7AM–5PM before submitting
     if (!validateTimeInputsInForm(this)) return false;
 
     let email = document.getElementById("addEmailInput").value;
@@ -1031,3 +1046,6 @@ $maxDate = date('Y-m-d', strtotime('-18 years'));
       });
   });
 </script>
+
+
+

@@ -24,12 +24,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['username'] = $admin['username'];
             $_SESSION['user_type'] = "admin";
 
-            log_audit($pdo, 'admin', $admin['username'], 'Logged In', 'Admin logged in via login page.');
+            log_audit($pdo, 'admin', $admin['username'], 'Logged In', 'Admin successfully logged in.');
 
             echo json_encode(['success' => true, 'redirect' => '/Mariategue-DentalClinic/patient_list/patient_list.php']);
             exit;
         } else {
-            log_audit($pdo, 'admin', $admin['username'], 'Failed Login Attempt', 'Wrong password for admin account: ' . $Email);
+            log_audit($pdo, 'admin', $admin['username'], 'Failed Login Attempt', 'Wrong password for admin email: ' . $Email);
         }
     }
 
@@ -44,12 +44,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['username'] = $dentist['first_name'];
             $_SESSION['user_type'] = "dentist";
 
-            log_audit($pdo, 'dentist', $dentist['first_name'] . ' ' . $dentist['last_name'], 'Logged In', 'Dentist logged in via login page.');
+            log_audit($pdo, 'dentist', $dentist['first_name'] . ' ' . $dentist['last_name'], 'Logged In', 'Dentist successfully logged in.');
 
             echo json_encode(['success' => true, 'redirect' => '/Mariategue-DentalClinic/patient_list/patient_list.php']);
             exit;
         } else {
-            log_audit($pdo, 'dentist', $dentist['first_name'] . ' ' . $dentist['last_name'], 'Failed Login Attempt', 'Wrong password for dentist account: ' . $Email);
+            log_audit($pdo, 'dentist', $dentist['first_name'] . ' ' . $dentist['last_name'], 'Failed Login Attempt', 'Wrong password for dentist email: ' . $Email);
         }
     }
 
@@ -65,17 +65,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['staff_id'] = $staff['staff_id'];
             $_SESSION['user_type'] = "staff";
 
-            log_audit($pdo, 'staff', $staff['first_name'] . ' ' . $staff['last_name'], 'Logged In', 'Staff logged in via login page.');
+            log_audit($pdo, 'staff', $staff['first_name'] . ' ' . $staff['last_name'], 'Logged In', 'Staff successfully logged in.');
 
             echo json_encode(['success' => true, 'redirect' => '/Mariategue-DentalClinic/patient_list/patient_list.php']);
             exit;
         } else {
-            log_audit($pdo, 'staff', $staff['first_name'] . ' ' . $staff['last_name'], 'Failed Login Attempt', 'Wrong password for staff account: ' . $Email);
+            log_audit($pdo, 'staff', $staff['first_name'] . ' ' . $staff['last_name'], 'Failed Login Attempt', 'Wrong password for staff email: ' . $Email);
         }
     }
 
-    // ❌ INVALID CREDENTIALS — unknown email
-    log_audit($pdo, 'unknown', $Email, 'Failed Login Attempt', 'No matching account found for email: ' . $Email);
+    // ❌ INVALID CREDENTIALS — walang nahanap na account
+    log_audit($pdo, 'unknown', $Email, 'Failed Login Attempt', 'No matching account found.');
     echo json_encode(['success' => false, 'message' => 'Invalid email or password!']);
     exit;
 }

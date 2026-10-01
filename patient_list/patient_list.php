@@ -1,7 +1,8 @@
-<?php
+﻿<?php
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
 include __DIR__ . '/../miscellaneous/auth_check.php';
+include __DIR__ . '/../miscellaneous/log_audit.php';
 
 // --- SIMPLE PRINT PRESCRIPTION HANDLER (INTEGRATED & FIXED STYLING) ---
 if (isset($_GET['print_prescription']) && isset($_GET['patient_id'])) {
@@ -426,28 +427,51 @@ if (isset($_POST['update_service_status'])) {
     }
 
     if ($pid) recomputePatientStatus($pdo, (int)$pid);
+    // Log service status change
+    $actor = $_SESSION['username'] ?? 'Unknown';
+    $actor_type = $_SESSION['user_type'] ?? 'staff';
+    log_audit($pdo, $actor_type, $actor, 'Updated Service Status', "Service ID: {$service_id} | New Status: {$new_status}");
     header("Location: patient_list.php?" . buildQueryPreserve());
     exit;
 }
 
 if (isset($_POST['delete_patient'])) {
     $id = $_POST['id'];
+    // Fetch patient name before soft-delete
+    $pName = $pdo->prepare("SELECT CONCAT(first_name,' ',last_name) FROM patients_list WHERE id=?");
+    $pName->execute([$id]);
+    $patientName = $pName->fetchColumn() ?: 'ID:'.$id;
     $pdo->prepare("UPDATE patients_list SET is_deleted=1 WHERE id=?")->execute([$id]);
+    $actor = $_SESSION['username'] ?? 'Unknown';
+    $actor_type = $_SESSION['user_type'] ?? 'staff';
+    log_audit($pdo, $actor_type, $actor, 'Deleted Patient from Queue', "Patient: {$patientName}");
     header("Location: patient_list.php?" . buildQueryPreserve());
     exit;
 }
 
 if (isset($_POST['restore_patient'])) {
     $id = $_POST['id'];
+    $pName = $pdo->prepare("SELECT CONCAT(first_name,' ',last_name) FROM patients_list WHERE id=?");
+    $pName->execute([$id]);
+    $patientName = $pName->fetchColumn() ?: 'ID:'.$id;
     $pdo->prepare("UPDATE patients_list SET is_deleted=0 WHERE id=?")->execute([$id]);
+    $actor = $_SESSION['username'] ?? 'Unknown';
+    $actor_type = $_SESSION['user_type'] ?? 'staff';
+    log_audit($pdo, $actor_type, $actor, 'Restored Patient to Queue', "Patient: {$patientName}");
     header("Location: patient_list.php?" . buildQueryPreserve());
     exit;
 }
 
 if (isset($_POST['refund_patient'])) {
     $id = $_POST['id'];
+    $pName = $pdo->prepare("SELECT CONCAT(first_name,' ',last_name) FROM patients_list WHERE id=?");
+    $pName->execute([$id]);
+    $patientName = $pName->fetchColumn() ?: 'ID:'.$id;
     $pdo->prepare("DELETE FROM patient_services WHERE patient_id=?")->execute([$id]);
     $pdo->prepare("DELETE FROM patients_list WHERE id=?")->execute([$id]);
+    $actor = $_SESSION['username'] ?? 'Unknown';
+    $actor_type = $_SESSION['user_type'] ?? 'staff';
+    log_audit($pdo, $actor_type, $actor, 'Refunded & Removed Patient', "Patient: {$patientName}");
     header("Location: patient_list.php?" . buildQueryPreserve());
     exit;
 }
@@ -664,8 +688,8 @@ function getServices(PDO $pdo, int $patient_id) {
 <h2>Patient Queue</h2>
 
 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-    <a href="patient_list.php?<?= buildQueryPreserve(['view' => 'active', 'page' => 1]) ?>" class="btn-add" style="text-decoration: none; <?= $view === 'active' ? '' : 'background-color: #64748b;' ?>">Active Patients</a>
-    <a href="patient_list.php?<?= buildQueryPreserve(['view' => 'deleted', 'page' => 1]) ?>" class="btn-add" style="text-decoration: none; <?= $view === 'deleted' ? '' : 'background-color: #64748b;' ?>">Deleted</a>
+    <a href="patient_list.php?<?= buildQueryPreserve(['view' => 'active', 'page' => 1]) ?>" class="btn-add" style="text-decoration: none; <?= $view === 'active' ? '' : 'background-color: #64748b !important;' ?>">Active Patients</a>
+    <a href="patient_list.php?<?= buildQueryPreserve(['view' => 'deleted', 'page' => 1]) ?>" class="btn-add" style="text-decoration: none; <?= $view === 'deleted' ? '' : 'background-color: #64748b !important;' ?>">Deleted</a>
 </div>
 
 <div class="table-wrapper">
@@ -725,7 +749,7 @@ function getServices(PDO $pdo, int $patient_id) {
       </td>
       <td data-label="Phone Number"><?= htmlspecialchars($p['phone_number']) ?></td>
       <td data-label="Email"><?= $p['email'] !== null ? htmlspecialchars($p['email']) : 'N/A' ?></td>
-      <td data-label="Schedule"><?= htmlspecialchars($p['date_visit']) ?> @ <?= htmlspecialchars($p['time_visit']) ?></td>
+      <td data-label="Schedule"><?= htmlspecialchars($p['date_visit']) ?> @ <?= date('g:i A', strtotime($p['time_visit'])) ?></td>
       <td data-label="Dentist">
         <?php
             $df = $p['dentist_first'] ?? '';
@@ -778,19 +802,20 @@ function getServices(PDO $pdo, int $patient_id) {
           </form>
 
           <?php if (strtoupper(trim($p['status'] ?? '')) === 'TREATED'): ?>
-            <a class="btn-view" href="patient_list.php?print_prescription=1&patient_id=<?= urlencode($p['id']) ?>" target="_blank" style="background:#06b6d4;color:white;margin-left:6px;text-decoration:none;padding:6px 8px;border-radius:6px;display:inline-block;">Print Prescription</a>
+            <br><br>
+            <a class="btn-view" href="patient_list.php?print_prescription=1&patient_id=<?= urlencode($p['id']) ?>" target="_blank" style="width:74px !important; height:auto !important; white-space:normal !important; line-height:1.3 !important; padding:6px 8px !important; font-size:12px !important; text-align:center !important;">Print Prescription</a>
           <?php endif; ?>
 
         <?php else: ?>
           <form method="post" style="display:inline;" id="patListRestoreForm_<?= $p['id'] ?>">
             <input type="hidden" name="id" value="<?= $p['id'] ?>">
             <input type="hidden" name="restore_patient" value="1">
-            <button type="button" class="btn-view" style="background-color: #f59e0b; border:none; padding:5px 10px; border-radius:4px; color:white; cursor:pointer;" onclick="showConfirmDialog('Restore this patient?', function(){ document.getElementById('patListRestoreForm_<?= $p['id'] ?>').submit(); }, { title: 'Restore Patient', icon: 'restore', okText: 'Restore' })">Restore</button>
+            <button type="button" class="btn-view" onclick="showConfirmDialog('Restore this patient?', function(){ document.getElementById('patListRestoreForm_<?= $p['id'] ?>').submit(); }, { title: 'Restore Patient', icon: 'restore', okText: 'Restore' })">Restore</button>
           </form>
           <form method="post" style="display:inline;" id="patListRefundForm_<?= $p['id'] ?>">
             <input type="hidden" name="id" value="<?= $p['id'] ?>">
             <input type="hidden" name="refund_patient" value="1">
-            <button type="button" class="btn-view btn-cancel" style="margin-top: 4px;" title="Refund this patient" onclick="showConfirmDialog('Refund this patient?', function(){ document.getElementById('patListRefundForm_<?= $p['id'] ?>').submit(); }, { title: 'Refund Patient', icon: 'refund', okText: 'Refund' })">Refund</button>
+            <button type="button" class="btn-view btn-cancel" title="Refund this patient" onclick="showConfirmDialog('Refund this patient?', function(){ document.getElementById('patListRefundForm_<?= $p['id'] ?>').submit(); }, { title: 'Refund Patient', icon: 'refund', okText: 'Refund' })">Refund</button>
           </form>
         <?php endif; ?>
       </td>
@@ -900,3 +925,4 @@ function toggleMobileMenu() {
 </script>
 </body>
 </html>
+

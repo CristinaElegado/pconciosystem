@@ -1,7 +1,8 @@
-<?php
+﻿<?php
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
 include __DIR__ . '/../miscellaneous/auth_check.php';
+include __DIR__ . '/../miscellaneous/log_audit.php';
 
 try {
     $pdo->exec("ALTER TABLE staff_accounts ADD COLUMN is_deleted TINYINT(1) DEFAULT 0");
@@ -123,6 +124,7 @@ if (isset($_POST['add'])) {
         $pdo->prepare("UPDATE staff_id_tracker SET last_number = ? WHERE id = 1")->execute([$newNumber]);
 
         $pdo->commit();
+        log_audit($pdo, $_SESSION['user_type'] ?? 'admin', $_SESSION['username'] ?? 'Unknown', 'Added Staff Account', "Staff: {$first_name} {$last_name} | ID: {$staff_id}");
         header("Location: staff_account.php");
         exit;
     } catch (\Throwable $e) {
@@ -210,6 +212,7 @@ if (isset($_POST['edit'])) {
     ");
     $stmt->execute([$first_name, ($middle_name === '' ? null : $middle_name), $last_name, $birthday, $address, $phone, $email, $is_active, $id]);
 
+    log_audit($pdo, $_SESSION['user_type'] ?? 'admin', $_SESSION['username'] ?? 'Unknown', 'Updated Staff Account', "Staff: {$first_name} {$last_name} | Email: {$email}");
     header("Location: staff_account.php");
     exit;
 }
@@ -217,7 +220,11 @@ if (isset($_POST['edit'])) {
 // DELETE
 if (isset($_POST['delete'])) {
     $id = $_POST['id'];
+    $sName = $pdo->prepare("SELECT CONCAT(first_name,' ',last_name) FROM staff_accounts WHERE id=?");
+    $sName->execute([$id]);
+    $staffName = $sName->fetchColumn() ?: 'ID:'.$id;
     $pdo->prepare("UPDATE staff_accounts SET is_deleted=1 WHERE id=?")->execute([$id]);
+    log_audit($pdo, $_SESSION['user_type'] ?? 'admin', $_SESSION['username'] ?? 'Unknown', 'Deactivated Staff Account', "Staff: {$staffName}");
     echo "<script>window.location='staff_account.php';</script>";
     exit;
 }
@@ -225,15 +232,24 @@ if (isset($_POST['delete'])) {
 // RESTORE
 if (isset($_POST['restore'])) {
     $id = $_POST['id'];
+    $sName = $pdo->prepare("SELECT CONCAT(first_name,' ',last_name) FROM staff_accounts WHERE id=?");
+    $sName->execute([$id]);
+    $staffName = $sName->fetchColumn() ?: 'ID:'.$id;
     $pdo->prepare("UPDATE staff_accounts SET is_deleted=0 WHERE id=?")->execute([$id]);
+    log_audit($pdo, $_SESSION['user_type'] ?? 'admin', $_SESSION['username'] ?? 'Unknown', 'Restored Staff Account', "Staff: {$staffName}");
     echo "<script>window.location='staff_account.php';</script>";
     exit;
 }
 
 // HARD DELETE
 if (isset($_POST['hard_delete'])) {
+    $id = $_POST['id'];
+    $sName = $pdo->prepare("SELECT CONCAT(first_name,' ',last_name) FROM staff_accounts WHERE id=?");
+    $sName->execute([$id]);
+    $staffName = $sName->fetchColumn() ?: 'ID:'.$id;
     $stmt = $pdo->prepare("DELETE FROM staff_accounts WHERE id=?");
-    $stmt->execute([$_POST['id']]);
+    $stmt->execute([$id]);
+    log_audit($pdo, $_SESSION['user_type'] ?? 'admin', $_SESSION['username'] ?? 'Unknown', 'Permanently Deleted Staff Account', "Staff: {$staffName}");
     echo "<script>window.location='staff_account.php';</script>";
     exit;
 }
@@ -576,7 +592,7 @@ unset($_SESSION['error_message']);
 <script>
   window.addEventListener('storage', function(e) {
       if (e.key === 'logoutEvent') {
-          alert('You have been logged out from another tab.');
+          showAlert('You have been logged out from another tab.');
           window.location.href = '../main_page/pconcio_main.php';
       }
   });
@@ -619,7 +635,7 @@ unset($_SESSION['error_message']);
       if (parts.length === 3) {
           const year = parseInt(parts[0], 10);
           if (year < 1000 || year > 9999 || parts[0].length !== 4) {
-              alert("Please enter a valid 4-digit year.");
+              showAlert("Please enter a valid 4-digit year.");
               input.value = '';
               return;
           }
@@ -627,7 +643,7 @@ unset($_SESSION['error_message']);
 
       const age = computeAge(dateValue);
       if (age < 18 || age >= 150) {
-          alert("Invalid birthday. Staff must be between 18 and 149 years old.");
+          showAlert("Invalid birthday. Staff must be between 18 and 149 years old.");
           input.value = '';
       }
   }
@@ -690,7 +706,7 @@ unset($_SESSION['error_message']);
 
     if (p !== c) {
       e.preventDefault();
-      alert("Password and Confirm Password do not match!");
+      showAlert("Password and Confirm Password do not match!");
       return false;
     }
   });
@@ -698,3 +714,4 @@ unset($_SESSION['error_message']);
 
 </body>
 </html>
+

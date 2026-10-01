@@ -1,7 +1,8 @@
-<?php
+﻿<?php
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
 include __DIR__ . '/../miscellaneous/auth_check.php';
+include __DIR__ . '/../miscellaneous/log_audit.php';
 
 // Automatic database migration para masigurong may middle_name at is_deleted column
 try {
@@ -73,6 +74,7 @@ if (isset($_POST['add'])) {
                     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
                     $stmt = $pdo->prepare("INSERT INTO patient_account (first_name, middle_name, last_name, birthday, age, gender, gmail, phone_number, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
                     $stmt->execute([$first_name, ($middle_name === '' ? null : $middle_name), $last_name, $birthday, $age, $gender, $gmail, $phone_number, $hashed_password]);
+                    log_audit($pdo, $_SESSION['user_type'] ?? 'admin', $_SESSION['username'] ?? 'Unknown', 'Added Patient Account', "Patient: {$first_name} {$last_name} | Email: {$gmail}");
                     header("Location: patient_account.php");
                     exit;
                 }
@@ -124,6 +126,7 @@ if (isset($_POST['edit'])) {
                 } else {
                     $stmt = $pdo->prepare("UPDATE patient_account SET first_name=?, middle_name=?, last_name=?, birthday=?, age=?, gender=?, gmail=?, phone_number=? WHERE id=?");
                     $stmt->execute([$first_name, ($middle_name === '' ? null : $middle_name), $last_name, $birthday, $age, $gender, $gmail, $phone_number, $id]);
+                    log_audit($pdo, $_SESSION['user_type'] ?? 'admin', $_SESSION['username'] ?? 'Unknown', 'Updated Patient Account', "Patient: {$first_name} {$last_name} | Email: {$gmail}");
                     header("Location: patient_account.php");
                     exit;
                 }
@@ -134,21 +137,34 @@ if (isset($_POST['edit'])) {
 
 if (isset($_POST['delete'])) {
     $id = $_POST['id'];
+    $pName = $pdo->prepare("SELECT CONCAT(first_name,' ',last_name) FROM patient_account WHERE id=?");
+    $pName->execute([$id]);
+    $patientName = $pName->fetchColumn() ?: 'ID:'.$id;
     $pdo->prepare("UPDATE patient_account SET is_deleted=1 WHERE id=?")->execute([$id]);
+    log_audit($pdo, $_SESSION['user_type'] ?? 'admin', $_SESSION['username'] ?? 'Unknown', 'Deactivated Patient Account', "Patient: {$patientName}");
     header("Location: patient_account.php");
     exit;
 }
 
 if (isset($_POST['restore'])) {
     $id = $_POST['id'];
+    $pName = $pdo->prepare("SELECT CONCAT(first_name,' ',last_name) FROM patient_account WHERE id=?");
+    $pName->execute([$id]);
+    $patientName = $pName->fetchColumn() ?: 'ID:'.$id;
     $pdo->prepare("UPDATE patient_account SET is_deleted=0 WHERE id=?")->execute([$id]);
+    log_audit($pdo, $_SESSION['user_type'] ?? 'admin', $_SESSION['username'] ?? 'Unknown', 'Restored Patient Account', "Patient: {$patientName}");
     header("Location: patient_account.php");
     exit;
 }
 
 if (isset($_POST['hard_delete'])) {
+    $id = $_POST['id'];
+    $pName = $pdo->prepare("SELECT CONCAT(first_name,' ',last_name) FROM patient_account WHERE id=?");
+    $pName->execute([$id]);
+    $patientName = $pName->fetchColumn() ?: 'ID:'.$id;
     $stmt = $pdo->prepare("DELETE FROM patient_account WHERE id=?");
-    $stmt->execute([$_POST['id']]);
+    $stmt->execute([$id]);
+    log_audit($pdo, $_SESSION['user_type'] ?? 'admin', $_SESSION['username'] ?? 'Unknown', 'Permanently Deleted Patient Account', "Patient: {$patientName}");
     header("Location: patient_account.php");
     exit;
 }
@@ -501,7 +517,7 @@ function validateBirthday(input, ageInputId) {
     if (parts.length === 3) {
         const year = parseInt(parts[0], 10);
         if (year < 1000 || year > 9999 || parts[0].length !== 4) {
-            alert("Please enter a valid 4-digit year.");
+            showAlert("Please enter a valid 4-digit year.");
             input.value = '';
             ageField.value = '';
             return;
@@ -510,7 +526,7 @@ function validateBirthday(input, ageInputId) {
 
     const age = computeAge(dateValue);
     if (age < 0 || age >= 150) {
-        alert("Invalid birthday. Age must be between 0 and 149.");
+        showAlert("Invalid birthday. Age must be between 0 and 149.");
         input.value = '';
         ageField.value = '';
         return;
@@ -593,3 +609,4 @@ document.addEventListener("input", function (e) {
 </script>
 </body>
 </html>
+

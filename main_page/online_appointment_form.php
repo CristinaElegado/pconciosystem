@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_appointment'])) 
     if ($requires_xray) {
         if (!isset($_FILES['dental_toothxray']) || $_FILES['dental_toothxray']['error'] !== UPLOAD_ERR_OK) {
             header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Kailangan mag-upload ng Dental Tooth/X-Ray image dahil ang napiling serbisyo ay nangangailangan nito.']);
+            echo json_encode(['success' => false, 'message' => 'A Dental Tooth/X-Ray image is required for the selected service.']);
             exit;
         }
     }
@@ -118,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_appointment'])) 
 
         if ($fileSize > 5 * 1024 * 1024) {
             header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Ang sukat ng X-Ray file ay hindi dapat lumagpas sa 5MB.']);
+            echo json_encode(['success' => false, 'message' => 'X-Ray file size must not exceed 5MB.']);
             exit;
         }
 
@@ -145,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_appointment'])) 
 
         if (!isset($_FILES['hmo_id_image']) || $_FILES['hmo_id_image']['error'] !== UPLOAD_ERR_OK) {
             header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Kailangan mag-attach ng larawan ng iyong HMO ID/Card.']);
+            echo json_encode(['success' => false, 'message' => 'Please attach a photo of your HMO ID/Card.']);
             exit;
         }
 
@@ -163,7 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_appointment'])) 
 
         if ($hmoFileSize > 5 * 1024 * 1024) {
             header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Ang sukat ng HMO ID file ay hindi dapat lumagpas sa 5MB.']);
+            echo json_encode(['success' => false, 'message' => 'HMO ID file size must not exceed 5MB.']);
             exit;
         }
 
@@ -239,7 +239,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_appointment'])) 
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Content-Type: application/json',
-            'Authorization: Basic ' . base64_encode('YOUR_PAYMONGO_SECRET_KEY_HERE:')
+            'Authorization: Basic ' . base64_encode((getenv('STRIPE_SECRET_KEY') ?: 'sk_test_REPLACE_WITH_YOUR_KEY') . ':')
         ]);
         $payload = json_encode(['data' => ['attributes' => [
             'amount' => intval($amount_to_pay * 100),
@@ -767,7 +767,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 data.forEach(slot => {
                     const option = document.createElement('option');
                     option.value = slot.time;
-                    option.textContent = slot.time + (slot.full ? ' (Full)' : '');
+                    // Convert 24h to 12h AM/PM for display
+                    const [h, m] = slot.time.split(':').map(Number);
+                    const period = h < 12 ? 'AM' : 'PM';
+                    const hour12 = h % 12 === 0 ? 12 : h % 12;
+                    const displayTime = hour12 + ':' + String(m).padStart(2, '0') + ' ' + period;
+                    option.textContent = displayTime + (slot.full ? ' (Full)' : '');
                     option.disabled = slot.full;
                     slotSelect.appendChild(option);
                 });

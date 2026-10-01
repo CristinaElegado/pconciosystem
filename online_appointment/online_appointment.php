@@ -1,7 +1,8 @@
-<?php
+﻿<?php
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
 include __DIR__ . '/../miscellaneous/auth_check.php';
+include __DIR__ . '/../miscellaneous/log_audit.php';
 
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -205,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'], $_POST['action'
                 </div>
                 <div style='padding: 25px; color: #333333; line-height: 1.6;'>
                     <p style='font-size: 16px;'>Kumusta, <b>$fullName</b>,</p>
-                    <p>Ang iyong appointment ay kasalukuyan nang nakamarka para sa <b>REFUND</b>.</p>
+                    <p>Your appointment is currently marked for <b>REFUND</b>.</p>
                     <p>Kasalukuyan na naming pinoproseso ang pagbabalik ng iyong naibayad na pera.</p>
                     <p style='margin-top: 25px;'>Salamat sa iyong paghihintay at pag-unawa.</p>
                 </div>
@@ -261,6 +262,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'], $_POST['action'
         }
 
         $pdo->commit();
+
+        // ── Audit log ──
+        $actor      = $_SESSION['username'] ?? 'Unknown';
+        $actor_type = $_SESSION['user_type'] ?? 'staff';
+        $actionLabel = match($action) {
+            'APPROVE'  => 'Approved Online Appointment',
+            'CANCEL'   => 'Cancelled Online Appointment',
+            'RESTORE'  => 'Restored Online Appointment',
+            'REFUND'   => 'Refunded Online Appointment',
+            default    => $action . ' Online Appointment',
+        };
+        log_audit($pdo, $actor_type, $actor, $actionLabel, "Patient: {$fullName} | Date: {$dateVisit} at {$timeVisit}");
 
     } catch (\Exception $e) {
         if ($pdo->inTransaction()) $pdo->rollBack();
@@ -662,16 +675,16 @@ $service_stmt = $pdo->prepare("
                     document.body.classList.remove("disable-clicks");
 
                     if (result.trim() === "SUCCESS") {
-                        alert(action + " successful!");
+                        showAlert(action + " successful!");
                         location.reload();
                     } else {
-                        alert("Error: " + result);
+                        showAlert("Error: " + result);
                     }
                 })
                 .catch(err => {
                     overlay.style.display = "none";
                     document.body.classList.remove("disable-clicks");
-                    alert("Request error: " + err);
+                    showAlert("Request error: " + err);
                 });
         }
 
@@ -690,3 +703,4 @@ $service_stmt = $pdo->prepare("
 </script>
 </body>
 </html>
+

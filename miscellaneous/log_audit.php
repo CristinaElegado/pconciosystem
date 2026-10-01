@@ -6,8 +6,8 @@
  * 
  * Usage:
  *   include __DIR__ . '/../miscellaneous/log_audit.php';
- *   log_audit($pdo, 'admin', 'Admin', 'Logged in');
- *   log_audit($pdo, 'dentist', 'Dr. Reyes', 'Viewed patient record');
+ *   log_audit($pdo, 'admin', 'Admin', 'Logged In');
+ *   log_audit($pdo, 'dentist', 'Dr. Reyes', 'Viewed Patient Record');
  */
 
 function log_audit(PDO $pdo, string $user_type, string $user_name, string $action, string $details = ''): void

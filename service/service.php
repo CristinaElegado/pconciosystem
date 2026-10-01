@@ -1,12 +1,8 @@
-<?php
+﻿<?php
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
 include __DIR__ . '/../miscellaneous/auth_check.php';
 include __DIR__ . '/../miscellaneous/log_audit.php';
-
-// Helper: get display name of currently logged-in user
-$_audit_user_type = $_SESSION['user_type'] ?? 'unknown';
-$_audit_user_name = $_SESSION['username'] ?? 'Unknown User';
 
 $services = $pdo->query("SELECT * FROM services")->fetchAll(PDO::FETCH_ASSOC);
 $all_items = $pdo->query("SELECT * FROM item_inventory")->fetchAll(PDO::FETCH_ASSOC);
@@ -60,15 +56,7 @@ if (isset($_POST['add_service'])) {
     }
   }
 
-  // Audit log: service added
-  log_audit(
-    $pdo,
-    $_audit_user_type,
-    $_audit_user_name,
-    'Added Service',
-    "Service '{$service_name}' added with price ₱{$price} (X-Ray: {$xray_requirement})."
-  );
-
+  log_audit($pdo, $_SESSION['user_type'] ?? 'staff', $_SESSION['username'] ?? 'Unknown', 'Added Service', "Service: {$service_name} | Price: {$price}");
   header("Location: service.php");
   exit;
 }
@@ -113,11 +101,6 @@ if (isset($_POST['update_service'])) {
     exit;
   }
 
-  // Fetch old values for audit detail
-  $old = $pdo->prepare("SELECT service_name, price, status FROM services WHERE id = ?");
-  $old->execute([$id]);
-  $oldData = $old->fetch(PDO::FETCH_ASSOC);
-
   $pdo->prepare("UPDATE services SET service_name=?, price=?, status=?, xray_requirement=? WHERE id=?")
       ->execute([$service_name, $price, $status, $xray_requirement, $id]);
 
@@ -130,44 +113,19 @@ if (isset($_POST['update_service'])) {
     }
   }
 
-  // Audit log: service updated
-  $oldName  = $oldData['service_name'] ?? '?';
-  $oldPrice = $oldData['price'] ?? '?';
-  $oldStatus = $oldData['status'] ?? '?';
-  log_audit(
-    $pdo,
-    $_audit_user_type,
-    $_audit_user_name,
-    'Updated Service',
-    "Service ID {$id} updated. Name: '{$oldName}' → '{$service_name}', Price: ₱{$oldPrice} → ₱{$price}, Status: {$oldStatus} → {$status}, X-Ray: {$xray_requirement}."
-  );
-
+  log_audit($pdo, $_SESSION['user_type'] ?? 'staff', $_SESSION['username'] ?? 'Unknown', 'Updated Service', "Service: {$service_name} | Price: {$price} | Status: {$status}");
   header("Location: service.php");
   exit;
 }
 
 if (isset($_POST['delete'])) {
   $id = $_POST['id'];
-
-  // Fetch service name before deleting (for audit trail)
-  $svcRow = $pdo->prepare("SELECT service_name, price FROM services WHERE id = ?");
-  $svcRow->execute([$id]);
-  $svcData = $svcRow->fetch(PDO::FETCH_ASSOC);
-  $deleted_name  = $svcData['service_name'] ?? "ID {$id}";
-  $deleted_price = $svcData['price'] ?? '?';
-
+  $svcName = $pdo->prepare("SELECT service_name FROM services WHERE id=?");
+  $svcName->execute([$id]);
+  $deletedSvc = $svcName->fetchColumn() ?: 'ID:'.$id;
   $pdo->prepare("DELETE FROM service_items WHERE service_id=?")->execute([$id]);
   $pdo->prepare("DELETE FROM services WHERE id=?")->execute([$id]);
-
-  // Audit log: service deleted
-  log_audit(
-    $pdo,
-    $_audit_user_type,
-    $_audit_user_name,
-    'Deleted Service',
-    "Service '{$deleted_name}' (ID: {$id}, Price: ₱{$deleted_price}) was permanently deleted."
-  );
-
+  log_audit($pdo, $_SESSION['user_type'] ?? 'staff', $_SESSION['username'] ?? 'Unknown', 'Deleted Service', "Service: {$deletedSvc}");
   header("Location: service.php");
   exit;
 }
@@ -527,8 +485,8 @@ function updateDisabledOptions(element){
 
 function validateItems(form){
   const selects = form.querySelectorAll('select[name="item_id[]"]');
-  if(selects.length === 0){ alert('Please add at least one item.'); return false; }
-  for(let s of selects){ if(s.value===''){ alert('Please select an item.'); return false; } }
+  if(selects.length === 0){ showAlert('Please add at least one item.'); return false; }
+  for(let s of selects){ if(s.value===''){ showAlert('Please select an item.'); return false; } }
   return true;
 }
 
@@ -593,3 +551,4 @@ document.addEventListener('input', function(e) {
 </script>
 </body>
 </html>
+

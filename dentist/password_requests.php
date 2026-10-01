@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
 use PHPMailer\PHPMailer\PHPMailer;
@@ -205,10 +205,11 @@ $requests = $pdo->query("
         // Listen for cross-tab logout
         window.addEventListener('storage', function(e) {
             if (e.key === 'logoutEvent') {
-                alert('You have been logged out from another tab.');
+                showAlert('You have been logged out from another tab.');
                 window.location.href = '../main_page/pconcio_main.php';
             }
         });
     </script>
 </body>
 </html>
+

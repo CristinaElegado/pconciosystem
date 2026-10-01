@@ -1,4 +1,4 @@
-body {
+﻿body {
   background: url("../assets/PIC.png") no-repeat center center fixed;
 }
 
@@ -18,22 +18,8 @@ body {
   color: black;
 }
 
-.btn-add {
-  background: #0ea5e9;
-  color: #fff;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  margin-bottom: 15px;
-  transition: background 0.2s ease;
-}
 
-.btn-add:hover {
-  background: #0284c7;
-}
+
 
 .table-wrapper {
   width: 100%;
@@ -74,31 +60,10 @@ table td {
   border-bottom: 1px solid black;
 }
 
-.btn-edit,
-.btn-delete {
-  padding: 6px 10px;
-  border: none;
-  border-radius: 5px;
-  font-size: 13px;
-  cursor: pointer;
-  margin-right: 5px;
-  margin-top: 4px;
-}
 
-.btn-edit {
-  background: black;
-  color: white;
-}
 
-.btn-delete {
-  background: black;
-  color: white;
-}
 
-.btn-edit:hover,
-.btn-delete:hover {
-  opacity: 0.9;
-}
+
 
 .modal {
   position: fixed;
@@ -208,10 +173,6 @@ label{
     white-space: nowrap;
   }
 
-  .btn-edit, .btn-delete {
-    font-size: 11px;
-    padding: 4px 6px;
-  }
 }
 
 @media (max-width: 500px) {
@@ -366,4 +327,52 @@ fieldset {
   color: black;
   background: white;
   padding-left: 20%;
+}
+
+
+/* ============================================================
+   RESPONSIVE — 768px MOBILE (staff account)
+   ============================================================ */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0 !important;
+    margin-top: 65px !important;
+    padding: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  table {
+    min-width: 600px !important;
+  }
+
+  .modal-content {
+    width: 95% !important;
+    max-width: 95% !important;
+    padding: 16px !important;
+  }
+
+  input, select, textarea {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  button {
+    font-size: 13px !important;
+  }
+
+  /* Stack modal buttons */
+  .modal-buttons {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .modal-buttons button {
+    width: 100% !important;
+  }
 }

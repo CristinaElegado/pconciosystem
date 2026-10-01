@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
 
@@ -270,7 +270,7 @@ function addService() {
     if (!id) return;
 
     if (selectedIds.includes(id)) {
-        alert("This service is already selected!");
+        showAlert("This service is already selected!");
         return;
     }
 
@@ -352,7 +352,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 data.forEach(slot => {
                     const option = document.createElement('option');
                     option.value = slot.time;
-                    option.textContent = slot.time + (slot.full ? ' (Full)' : '');
+                    // Convert 24h to 12h AM/PM for display
+                    const [h, m] = slot.time.split(':').map(Number);
+                    const period = h < 12 ? 'AM' : 'PM';
+                    const hour12 = h % 12 === 0 ? 12 : h % 12;
+                    const displayTime = hour12 + ':' + String(m).padStart(2, '0') + ' ' + period;
+                    option.textContent = displayTime + (slot.full ? ' (Full)' : '');
                     option.disabled = slot.full;
                     timeSelect.appendChild(option);
                 });
@@ -375,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const day = new Date(selectedDate).getUTCDay();
         if (day === 0) {
-            alert("Appointments are not allowed on Sundays.");
+            showAlert("Appointments are not allowed on Sundays.");
             this.value = '';
             dentistSelect.innerHTML = '<option value="">Please select a date first</option>';
             return;
@@ -442,19 +447,19 @@ document.querySelector("form").addEventListener("submit", function(e) {
     }
 
     if (serviceIds.trim() === "") {
-        alert("Please select at least one service.");
+        showAlert("Please select at least one service.");
         e.preventDefault();
         return;
     }
 
     if (!dateVisit || !timeSlot || !dentist) {
-        alert("Please complete the date, dentist, and time slot selection.");
+        showAlert("Please complete the date, dentist, and time slot selection.");
         e.preventDefault();
         return;
     }
 
     if (!/^(09)\d{9}$/.test(phone)) {
-        alert("Phone number must start with 09 and be 11 digits.");
+        showAlert("Phone number must start with 09 and be 11 digits.");
         e.preventDefault();
         return;
     }
@@ -628,7 +633,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 timeSel.innerHTML = '';
                 const opt = document.createElement('option');
                 opt.value = draft['time_slot'];
-                opt.textContent = draft['time_text'];
+                // Always display in AM/PM format
+                const rawTime = draft['time_slot'];
+                const [h, m] = rawTime.split(':').map(Number);
+                const period = h < 12 ? 'AM' : 'PM';
+                const hour12 = h % 12 === 0 ? 12 : h % 12;
+                const displayTime = hour12 + ':' + String(m).padStart(2, '0') + ' ' + period;
+                opt.textContent = displayTime;
                 opt.selected = true;
                 timeSel.appendChild(opt);
                 timeSel.disabled = false;
@@ -683,3 +694,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </body>
 </html>
+

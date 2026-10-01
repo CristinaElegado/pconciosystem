@@ -43,7 +43,7 @@
             <td><?= $service_names ?></td>
             <td><?= number_format($total_price, 2) ?></td>
             <td><?= $row['date_visit'] ?></td>
-            <td><?= date("H:i", strtotime($row['time_visit'])) ?></td>
+            <td><?= date("g:i A", strtotime($row['time_visit'])) ?></td>
             <td><?= $row['dentist_name'] ?></td>
             <td><?= $row['status'] ?></td>
             <td><?= htmlspecialchars($row['payment_method'] ?? 'Cash') ?></td>

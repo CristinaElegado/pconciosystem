@@ -328,3 +328,51 @@ table td {
   }
 }
 
+
+/* ============================================================
+   RESPONSIVE — 768px MOBILE (transaction)
+   ============================================================ */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0 !important;
+    margin-top: 65px !important;
+    padding: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  table {
+    min-width: 600px !important;
+  }
+
+  .modal-content {
+    width: 95% !important;
+    max-width: 95% !important;
+    padding: 16px !important;
+  }
+
+  input, select, textarea {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  button {
+    font-size: 13px !important;
+  }
+
+  /* Filter form stacks on small screens */
+  .filters-form {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .filter-input,
+  .filter-select {
+    width: 100% !important;
+  }
+}

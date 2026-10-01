@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // hmo_providers.php - Adjusted to match HMO Requests design style
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
@@ -508,10 +508,10 @@ include __DIR__ . '/../miscellaneous/sidebar.php';
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert(data.message);
+                        showAlert(data.message);
                         location.reload();
                     } else {
-                        alert('Error: ' + data.message);
+                        showAlert('Error: ' + data.message);
                     }
                 });
         }, { title: 'Deactivate HMO', icon: 'warning', danger: true, okText: 'Deactivate' });
@@ -525,10 +525,10 @@ include __DIR__ . '/../miscellaneous/sidebar.php';
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(data.message);
+                    showAlert(data.message);
                     location.reload();
                 } else {
-                    alert('Error: ' + data.message);
+                    showAlert('Error: ' + data.message);
                 }
             });
     });
@@ -553,3 +553,4 @@ include __DIR__ . '/../miscellaneous/sidebar.php';
 
 </body>
 </html>
+

@@ -213,3 +213,67 @@ label {
     height: 16px;
     cursor: pointer;
 }
+
+/* ============================================================
+   RESPONSIVE — 768px MOBILE (walk-in)
+   ============================================================ */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0 !important;
+    margin-top: 65px !important;
+    padding: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 10px !important;
+  }
+
+  table {
+    min-width: 600px !important;
+  }
+
+  .modal-content {
+    width: 95% !important;
+    max-width: 95% !important;
+    padding: 16px !important;
+  }
+
+  /* All form inputs full-width */
+  input, select, textarea {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .settings-input {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .settings-btn {
+    width: 100% !important;
+  }
+
+  button {
+    font-size: 13px !important;
+  }
+
+  /* Service tags wrap */
+  #selectedServicesContainer {
+    justify-content: flex-start !important;
+  }
+
+  .service-tag {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  /* Input with checkbox: stack */
+  .input-with-checkbox {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+}

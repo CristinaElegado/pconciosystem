@@ -1,9 +1,7 @@
 /* =====================================================
-   audit_trail_design.css
-   Styling for the Audit Trail page (admin only)
+   audit_trail_design.css  —  Admin-only Audit Trail
    ===================================================== */
 
-/* ── Page wrapper ── */
 .main-content {
   padding: 28px 32px;
   font-family: 'Poppins', sans-serif;
@@ -29,9 +27,7 @@
   gap: 10px;
 }
 
-.at-header h2 i {
-  color: #0ea5e9;
-}
+.at-header h2 i { color: #0ea5e9; }
 
 /* ── Filter bar ── */
 .at-filters {
@@ -42,7 +38,6 @@
 }
 
 .at-filters select,
-.at-filters input[type="text"],
 .at-filters input[type="date"] {
   padding: 8px 12px;
   border: 1.5px solid #cbd5e1;
@@ -56,9 +51,7 @@
 }
 
 .at-filters select:focus,
-.at-filters input:focus {
-  border-color: #0ea5e9;
-}
+.at-filters input:focus { border-color: #0ea5e9; }
 
 .at-filters .btn-clear {
   padding: 8px 16px;
@@ -69,17 +62,19 @@
   font-family: 'Poppins', sans-serif;
   cursor: pointer;
   color: #475569;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   transition: background 0.2s;
 }
 
-.at-filters .btn-clear:hover {
-  background: #e2e8f0;
-}
+.at-filters .btn-clear:hover { background: #e2e8f0; }
 
 /* ── Stats cards ── */
 .at-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 14px;
   margin-bottom: 24px;
 }
@@ -88,21 +83,21 @@
   background: #fff;
   border-radius: 12px;
   padding: 18px 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
   border-left: 4px solid #0ea5e9;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.at-stat-card.admin-card  { border-left-color: #6366f1; }
-.at-stat-card.dentist-card{ border-left-color: #0ea5e9; }
-.at-stat-card.staff-card  { border-left-color: #10b981; }
-.at-stat-card.patient-card{ border-left-color: #f59e0b; }
-.at-stat-card.total-card  { border-left-color: #64748b; }
+.at-stat-card.total-card   { border-left-color: #64748b; }
+.at-stat-card.admin-card   { border-left-color: #6366f1; }
+.at-stat-card.dentist-card { border-left-color: #0ea5e9; }
+.at-stat-card.staff-card   { border-left-color: #10b981; }
+.at-stat-card.patient-card { border-left-color: #f59e0b; }
 
 .at-stat-card .stat-label {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: #94a3b8;
   font-weight: 500;
   text-transform: uppercase;
@@ -120,7 +115,7 @@
 .table-wrapper {
   background: #fff;
   border-radius: 14px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
   overflow: hidden;
 }
 
@@ -145,15 +140,22 @@
   transition: background 0.15s;
 }
 
-.table-wrapper tbody tr:hover {
-  background: #f8fafc;
-}
+.table-wrapper tbody tr:hover { background: #f8fafc; }
 
 .table-wrapper tbody td {
   padding: 12px 16px;
   color: #334155;
   vertical-align: middle;
 }
+
+/* Column sizing */
+.col-timelogs { font-weight: 500; white-space: nowrap; min-width: 130px; }
+.col-action   { white-space: nowrap; min-width: 150px; }
+.col-details  { color: #475569; max-width: 380px; }
+.col-date     { white-space: nowrap; color: #64748b; min-width: 160px; }
+
+/* Empty dash */
+.empty-cell { color: #cbd5e1; }
 
 /* ── Role badge ── */
 .role-badge {
@@ -163,12 +165,14 @@
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: capitalize;
+  white-space: nowrap;
 }
 
 .role-badge.admin   { background: #ede9fe; color: #6d28d9; }
 .role-badge.dentist { background: #e0f2fe; color: #0369a1; }
 .role-badge.staff   { background: #dcfce7; color: #15803d; }
 .role-badge.patient { background: #fef9c3; color: #92400e; }
+.role-badge.unknown { background: #fee2e2; color: #b91c1c; }
 
 /* ── Empty state ── */
 .at-empty {
@@ -192,15 +196,11 @@
   gap: 10px;
   padding: 16px 20px;
   border-top: 1px solid #f1f5f9;
-  background: #fff;
   font-size: 0.85rem;
   color: #64748b;
 }
 
-.at-pagination .page-btns {
-  display: flex;
-  gap: 6px;
-}
+.at-pagination .page-btns { display: flex; gap: 6px; }
 
 .at-pagination button {
   padding: 6px 14px;
@@ -219,10 +219,7 @@
   color: #0369a1;
 }
 
-.at-pagination button:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
+.at-pagination button:disabled { opacity: 0.4; cursor: default; }
 
 .at-pagination button.active {
   background: #0ea5e9;
@@ -232,10 +229,11 @@
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  .main-content  { padding: 18px 14px; }
-  .at-header     { flex-direction: column; align-items: flex-start; }
-  .at-filters    { flex-direction: column; align-items: stretch; }
+  .main-content { padding: 18px 14px; }
+  .at-header    { flex-direction: column; align-items: flex-start; }
+  .at-filters   { flex-direction: column; align-items: stretch; }
   .at-filters select,
   .at-filters input { width: 100%; }
-  .at-stats      { grid-template-columns: 1fr 1fr; }
+  .at-stats     { grid-template-columns: 1fr 1fr; }
+  .col-details  { max-width: 200px; }
 }
