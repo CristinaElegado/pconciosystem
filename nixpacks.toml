@@ -1,8 +1,5 @@
 [phases.setup]
-nixPkgs = ["php83", "php83Extensions.pdo", "php83Extensions.pdo_mysql", "php83Extensions.mysqli", "php83Extensions.mbstring", "php83Extensions.gd", "php83Extensions.curl", "php83Extensions.openssl", "php83Extensions.fileinfo"]
-
-[phases.build]
-cmds = []
+nixPkgs = ["php84", "php84Extensions.pdo", "php84Extensions.pdo_mysql", "php84Extensions.mysqli", "php84Extensions.mbstring", "php84Extensions.gd", "php84Extensions.curl", "php84Extensions.openssl", "php84Extensions.fileinfo"]
 
 [start]
-cmd = "php -S 0.0.0.0:$PORT -t ."
+cmd = "php -S 0.0.0.0:$PORT -t . -c php.ini"
