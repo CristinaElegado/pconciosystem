@@ -1,5 +1,4 @@
 <?php
-<?php
 // pconcio_main.php - Full fixed version with safe AJAX login JSON responses
 
 ob_start();
