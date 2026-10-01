@@ -35,6 +35,19 @@ if (isset($_SESSION['user_type'])) {
     }
 }
 
+// If no admin account exists yet, redirect to setup page
+try {
+    $adminCount = $pdo->query("SELECT COUNT(*) FROM admin")->fetchColumn();
+    if ((int)$adminCount === 0) {
+        header("Location: ../setup.php");
+        exit;
+    }
+} catch (PDOException $e) {
+    // Table may not exist yet — redirect to setup to initialize
+    header("Location: ../setup.php");
+    exit;
+}
+
 // ── Run column migrations once per request (safe, idempotent) ────────────────
 // IF NOT EXISTS may not be supported on MySQL 5.7 — catch silently per column
 $_migrateTables = ['admin', 'dentist_accounts', 'staff_accounts', 'patient_account'];

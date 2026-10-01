@@ -8,6 +8,18 @@ header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 header('Expires: 0');
 
+// If no admin account exists yet, redirect to setup page
+try {
+    $adminCount = $pdo->query("SELECT COUNT(*) FROM admin")->fetchColumn();
+    if ((int)$adminCount === 0) {
+        header("Location: ../setup.php");
+        exit;
+    }
+} catch (PDOException $e) {
+    header("Location: ../setup.php");
+    exit;
+}
+
 // ── Already logged in? Restore from cookie if needed, then redirect away ──────
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     if (!isset($_SESSION['id']) || !isset($_SESSION['user_type'])) {
