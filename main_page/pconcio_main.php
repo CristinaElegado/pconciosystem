@@ -158,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['testimonial_submit'])
     $rating  = max(1, min(5, (int)($_POST['rating'] ?? 5)));
     $comment = trim(strip_tags($_POST['comment'] ?? ''));
 
-    if ($name !== '' && $comment !== '') {
+    if ($name !== '' && $comment !== '' && $rating >= 1) {
         try {
             $pdo->prepare("CREATE TABLE IF NOT EXISTS `testimonials` (
                 `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -177,7 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['testimonial_submit'])
             $testimonial_error = "Could not submit review. Please try again.";
         }
     } else {
-        $testimonial_error = "Please fill in your name and comment.";
+        $testimonial_error = "Please fill in your name, select a star rating, and write a comment.";
     }
 }
 
@@ -807,12 +807,15 @@ nav a:hover {
 .testimonial-modal textarea:focus { outline: none; border-color: var(--primary-pink); }
 
 /* Star rating picker */
-.star-picker { display: flex; gap: 6px; margin-bottom: 16px; flex-direction: row-reverse; justify-content: flex-end; }
+.star-picker { display: flex; gap: 4px; margin-bottom: 16px; }
 .star-picker input { display: none; }
-.star-picker label { font-size: 1.8rem; color: #d1d5db; cursor: pointer; transition: color .15s; }
-.star-picker label:hover,
-.star-picker label:hover ~ label,
-.star-picker input:checked ~ label { color: #fcd34d; }
+.star-picker label {
+    font-size: 2rem; color: #d1d5db; cursor: pointer;
+    transition: color .1s, transform .1s;
+    user-select: none;
+}
+.star-picker label.hovered,
+.star-picker label.selected { color: #fcd34d; transform: scale(1.15); }
 
 .testimonial-modal .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 4px; }
 .testimonial-modal .btn-submit-review {
@@ -1739,13 +1742,14 @@ form button:disabled {
             <input type="text" name="patient_name" placeholder="e.g. Juan dela Cruz" required maxlength="100">
 
             <label>Rating</label>
-            <div class="star-picker">
-                <input type="radio" id="s5" name="rating" value="5" checked><label for="s5">★</label>
-                <input type="radio" id="s4" name="rating" value="4"><label for="s4">★</label>
-                <input type="radio" id="s3" name="rating" value="3"><label for="s3">★</label>
-                <input type="radio" id="s2" name="rating" value="2"><label for="s2">★</label>
-                <input type="radio" id="s1" name="rating" value="1"><label for="s1">★</label>
+            <div class="star-picker" id="starPicker">
+                <label data-val="1">★</label>
+                <label data-val="2">★</label>
+                <label data-val="3">★</label>
+                <label data-val="4">★</label>
+                <label data-val="5">★</label>
             </div>
+            <input type="hidden" name="rating" id="ratingInput" value="0">
 
             <label>Your Comment</label>
             <textarea name="comment" rows="4" placeholder="Tell us about your experience..." required maxlength="1000"></textarea>
@@ -1781,6 +1785,33 @@ document.getElementById('fullTestimonialModal').addEventListener('click', functi
 <?php if (!empty($testimonial_success)): ?>
 document.addEventListener('DOMContentLoaded', function(){ document.getElementById('reviewModal').classList.add('open'); });
 <?php endif; ?>
+
+// ── JS Star Picker ──────────────────────────────────────────────────────────
+(function() {
+    const picker = document.getElementById('starPicker');
+    const input  = document.getElementById('ratingInput');
+    if (!picker) return;
+
+    const stars = Array.from(picker.querySelectorAll('label'));
+    let selected = 0;
+
+    function highlight(upTo) {
+        stars.forEach((s, i) => {
+            s.classList.toggle('hovered', i < upTo);
+            s.classList.toggle('selected', i < upTo);
+        });
+    }
+
+    stars.forEach((star, idx) => {
+        star.addEventListener('mouseenter', () => highlight(idx + 1));
+        star.addEventListener('mouseleave', () => highlight(selected));
+        star.addEventListener('click', () => {
+            selected = idx + 1;
+            input.value = selected;
+            highlight(selected);
+        });
+    });
+})();
 </script>
 
 <section id="services" class="service-section scroll-animate">
