@@ -722,22 +722,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
   // Poll every 5 seconds
   setInterval(pollSession, 5000);
-
-  // ── Auto-logout on browser close / tab close / PC shutdown ──────────────────
-  // sendBeacon is fire-and-forget, works even when the page is unloading
-  function sendClearBeacon() {
-    navigator.sendBeacon('/miscellaneous/session_token_clear.php');
-  }
-
-  // Tab/window closed or navigating away
-  window.addEventListener('beforeunload', sendClearBeacon);
-
-  // Mobile / device sleep / screen off → tab goes hidden
-  document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'hidden') {
-      sendClearBeacon();
-    }
-  });
 </script>
 
 </body>
