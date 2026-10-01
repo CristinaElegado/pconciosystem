@@ -674,6 +674,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
     document.getElementById('sessionModal').classList.add('show');
   }
 
+  let _noSessionStrikes = 0; // consecutive no_session counts before redirect
+
   async function pollSession() {
     if (!_sessionPollingActive) return;
     try {
@@ -681,14 +683,13 @@ $current_page = basename($_SERVER['PHP_SELF']);
       const data = await res.json();
 
       if (!data.valid) {
-        _sessionPollingActive = false;
 
         if (data.reason === 'no_admin') {
-          // Admin deleted — redirect to register page immediately
+          _sessionPollingActive = false;
           window.location.href = data.register_url || '/setup.php';
 
         } else if (data.reason === 'deleted') {
-          // Current user account deleted
+          _sessionPollingActive = false;
           const modal = document.getElementById('sessionModal');
           if (modal) {
             document.getElementById('sessionModalTitle').textContent = 'Account Deleted';
@@ -700,7 +701,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
           }
 
         } else if (data.reason === 'kicked') {
-          // Logged in from another device
+          _sessionPollingActive = false;
           const modal = document.getElementById('sessionModal');
           if (modal) {
             document.getElementById('sessionModalTitle').textContent = 'Logged In Elsewhere';
@@ -712,11 +713,26 @@ $current_page = basename($_SERVER['PHP_SELF']);
           }
 
         } else if (data.reason === 'no_session') {
-          window.location.href = '/login_main/login.php';
+          // Don't redirect on first no_session — Railway can restart containers,
+          // wiping PHP sessions temporarily. Give 3 consecutive strikes before acting.
+          _noSessionStrikes++;
+          if (_noSessionStrikes >= 3) {
+            _sessionPollingActive = false;
+            window.location.href = '/login_main/login.php';
+          }
+          // else: keep polling — session_restore.php will recover it
+          return;
         }
+
+        // Reset strikes on any other invalid reason (handled above)
+        _noSessionStrikes = 0;
+
+      } else {
+        // Valid session — reset strike counter
+        _noSessionStrikes = 0;
       }
     } catch (e) {
-      // Network error — ignore
+      // Network error — ignore, don't count as strike
     }
   }
 

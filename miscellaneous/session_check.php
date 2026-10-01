@@ -40,7 +40,7 @@ if (!isset($_SESSION['session_token'])) {
     exit;
 }
 
-include __DIR__ . '/database.php';
+include_once __DIR__ . '/database.php';
 
 // Ensure session_token columns exist (safe to run every time, IF NOT EXISTS is cheap)
 try {
