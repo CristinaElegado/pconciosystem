@@ -55,7 +55,8 @@ $approved = $pdo->query("SELECT * FROM testimonials WHERE is_approved = 1 ORDER 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="miscellaneous/sidebar_design.css">
     <style>
-        .main-content { padding: 30px; max-width: 960px; margin: 0 auto; }
+        .main-content { padding: 30px; }
+        .approval-wrapper { max-width: 860px; margin: 0 auto; }
         .page-title { font-size: 1.6rem; font-weight: 700; color: #1e293b; margin-bottom: 6px; }
         .page-subtitle { font-size: .875rem; color: #64748b; margin-bottom: 28px; }
 
@@ -79,6 +80,7 @@ $approved = $pdo->query("SELECT * FROM testimonials WHERE is_approved = 1 ORDER 
         .review-card {
             background: #fff; border-radius: 12px; padding: 20px 22px;
             box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 14px;
+            border: 1px solid #e2e8f0;
             display: flex; align-items: flex-start; gap: 18px;
         }
         .review-card .star-display { font-size: 1.2rem; color: #fcd34d; white-space: nowrap; }
@@ -129,6 +131,7 @@ $approved = $pdo->query("SELECT * FROM testimonials WHERE is_approved = 1 ORDER 
 <?php endif; ?>
 
 <div class="main-content">
+<div class="approval-wrapper">
     <div class="page-title"><i class="fa-solid fa-star" style="color:#fcd34d"></i> Testimonial Approvals</div>
     <div class="page-subtitle">Review and approve or reject patient-submitted testimonials before they appear on the main page.</div>
 
@@ -202,6 +205,6 @@ $approved = $pdo->query("SELECT * FROM testimonials WHERE is_approved = 1 ORDER 
             </div>
         </div>
     <?php endforeach; endif; ?>
-</div>
-</body>
+</div><!-- /.approval-wrapper -->
+</div><!-- /.main-content -->
 </html>
