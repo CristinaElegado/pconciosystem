@@ -115,4 +115,14 @@ if (!$exists) {
     exit;
 }
 
+// ── Token mismatch = logged in from another device (kicked) ──────────────────
+// Only check if the DB actually has a token stored (null means single-session
+// feature was not yet active when this user logged in — treat as valid).
+if (!empty($dbToken) && !empty($myToken) && !hash_equals($dbToken, $myToken)) {
+    session_unset();
+    session_destroy();
+    echo json_encode(['valid' => false, 'reason' => 'kicked']);
+    exit;
+}
+
 echo json_encode(['valid' => true]);

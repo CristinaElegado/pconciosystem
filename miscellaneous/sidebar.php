@@ -674,7 +674,14 @@ $current_page = basename($_SERVER['PHP_SELF']);
     document.getElementById('sessionModal').classList.add('show');
   }
 
-  let _noSessionStrikes = 0; // consecutive no_session counts before redirect
+  let _noSessionStrikes = 0;      // consecutive no_session counts
+  let _pollIntervalMs   = 5000;   // starts at 5 s, backs off during recovery
+  let _pollTimer        = null;
+
+  function schedulePoll(ms) {
+    clearTimeout(_pollTimer);
+    _pollTimer = setTimeout(pollSession, ms);
+  }
 
   async function pollSession() {
     if (!_sessionPollingActive) return;
@@ -687,6 +694,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         if (data.reason === 'no_admin') {
           _sessionPollingActive = false;
           window.location.href = data.register_url || '/setup.php';
+          return;
 
         } else if (data.reason === 'deleted') {
           _sessionPollingActive = false;
@@ -699,6 +707,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
           } else {
             window.location.href = '/main_page/pconcio_main.php';
           }
+          return;
 
         } else if (data.reason === 'kicked') {
           _sessionPollingActive = false;
@@ -711,33 +720,52 @@ $current_page = basename($_SERVER['PHP_SELF']);
           } else {
             window.location.href = '/main_page/pconcio_main.php';
           }
+          return;
 
         } else if (data.reason === 'no_session') {
-          // Don't redirect on first no_session — Railway can restart containers,
-          // wiping PHP sessions temporarily. Give 3 consecutive strikes before acting.
+          // Railway containers restart and wipe PHP sessions — session_restore.php
+          // will recover the session from the __st cookie within a few polls.
+          // Use a high threshold + backoff so a container restart never kicks you.
           _noSessionStrikes++;
-          if (_noSessionStrikes >= 3) {
-            _sessionPollingActive = false;
-            window.location.href = '/main_page/pconcio_main.php';
+
+          if (_noSessionStrikes <= 10) {
+            // Back off polling interval during recovery (max 30 s)
+            _pollIntervalMs = Math.min(_pollIntervalMs * 1.5, 30000);
+            schedulePoll(_pollIntervalMs);
+            return; // keep polling silently — DO NOT redirect
           }
-          // else: keep polling — session_restore.php will recover it
+
+          // After 10 consecutive failures (≥ ~50 s of no recovery), show a
+          // non-destructive warning modal instead of a hard redirect.
+          // User can click OK to reload and re-authenticate via the cookie.
+          _sessionPollingActive = false;
+          const modal = document.getElementById('sessionModal');
+          if (modal) {
+            document.getElementById('sessionModalTitle').textContent = 'Session Interrupted';
+            document.getElementById('sessionModalMessage').textContent = 'Your session could not be verified. Click OK to reload and continue.';
+            _sessionModalRedirectUrl = window.location.href; // reload same page
+            modal.classList.add('show');
+          }
+          // No hard redirect — user stays where they are until they click OK
           return;
         }
 
-        // Reset strikes on any other invalid reason (handled above)
         _noSessionStrikes = 0;
 
       } else {
-        // Valid session — reset strike counter
+        // Valid session — reset everything
         _noSessionStrikes = 0;
+        _pollIntervalMs   = 5000;
       }
     } catch (e) {
       // Network error — ignore, don't count as strike
     }
+
+    schedulePoll(_pollIntervalMs);
   }
 
-  // Poll every 5 seconds
-  setInterval(pollSession, 5000);
+  // Start polling
+  schedulePoll(_pollIntervalMs);
 </script>
 
 </body>
