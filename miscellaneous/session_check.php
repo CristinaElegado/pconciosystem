@@ -23,7 +23,24 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['user_type'])) {
     exit;
 }
 
+// ── Force-kick old sessions that predate the session_token feature ────────────
+// If no token in session, it's a stale pre-deploy session — log them out
+if (!isset($_SESSION['session_token'])) {
+    session_unset();
+    session_destroy();
+    echo json_encode(['valid' => false, 'reason' => 'no_session']);
+    exit;
+}
+
 include __DIR__ . '/database.php';
+
+// Ensure session_token columns exist (safe to run every time, IF NOT EXISTS is cheap)
+try {
+    $pdo->exec("ALTER TABLE admin              ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
+    $pdo->exec("ALTER TABLE dentist_accounts   ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
+    $pdo->exec("ALTER TABLE staff_accounts     ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
+    $pdo->exec("ALTER TABLE patient_account    ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
+} catch (PDOException $e) { /* silent */ }
 
 $userId    = $_SESSION['id'];
 $userType  = $_SESSION['user_type'];
