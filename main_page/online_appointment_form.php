@@ -239,7 +239,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_appointment'])) 
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Content-Type: application/json',
-            'Authorization: Basic ' . base64_encode((getenv('STRIPE_SECRET_KEY') ?: 'sk_test_REPLACE_WITH_YOUR_KEY') . ':')
+            'Authorization: Basic ' . base64_encode((getenv('PAYMONGO_SECRET_KEY') ?: getenv('STRIPE_SECRET_KEY') ?: 'sk_test_REPLACE_WITH_YOUR_KEY') . ':')
         ]);
         $payload = json_encode(['data' => ['attributes' => [
             'amount' => intval($amount_to_pay * 100),
@@ -364,34 +364,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_appointment'])) 
             $stmtHmoReq->execute([$appointment_id, $appointment_id, $hmo_id, $total_price, $coverage_percentage, $hmo_deduction, $patient_responsibility]);
         }
 
-        // Send Email Confirmation
-        $mail = new PHPMailer(true);
-        $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
-        $mail->SMTPAuth   = true;
-        $mail->Username   = 'beanchcanonego1212@gmail.com';
-        $mail->Password   = 'xksi pzdv avxp clby';
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
+        // Send Email Confirmation — wrapped in its own try-catch so email failure
+        // does NOT cancel an already-saved appointment.
+        try {
+            $mail = new PHPMailer(true);
+            $mail->isSMTP();
+            $mail->Host       = 'smtp.gmail.com';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = 'beanchcanonego1212@gmail.com';
+            $mail->Password   = 'xksi pzdv avxp clby';
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = 587;
+            // Timeout settings: connect max 10 s, SMTP command max 10 s
+            $mail->Timeout    = 10;
+            $mail->SMTPOptions = [
+                'ssl' => [
+                    'verify_peer'       => false,
+                    'verify_peer_name'  => false,
+                    'allow_self_signed' => true
+                ]
+            ];
 
-        $mail->setFrom('beanchcanonego1212@gmail.com', 'Mariategue Ortho-DentalClinic');
-        $mail->addAddress($email);
-        $mail->addBCC('farishitomi@gmail.com');
+            $mail->setFrom('beanchcanonego1212@gmail.com', 'Mariategue Ortho-DentalClinic');
+            $mail->addAddress($email);
+            $mail->addBCC('farishitomi@gmail.com');
 
-        $mail->isHTML(true);
-        $mail->Subject = 'Dental Appointment Confirmation';
-        $mail->Body    = "
-            Hello <b>$first_name $last_name</b>,<br><br>
-            Your appointment request has been received" . ($payment_method === 'HMO' ? ' using HMO coverage.' : '.') . "<br><br>
-            <b>Patient Type:</b> $patient_type <br>
-            <b>Allergies:</b> $allergies <br>
-            <b>Date:</b> $date_visit <br>
-            <b>Time:</b> $time_visit <br><br>
-            We will notify you once the staff approves your appointment.<br><br>
-            Thank you!
-        ";
+            $mail->isHTML(true);
+            $mail->Subject = 'Dental Appointment Confirmation';
+            $mail->Body    = "
+                Hello <b>$first_name $last_name</b>,<br><br>
+                Your appointment request has been received" . ($payment_method === 'HMO' ? ' using HMO coverage.' : '.') . "<br><br>
+                <b>Patient Type:</b> $patient_type <br>
+                <b>Allergies:</b> $allergies <br>
+                <b>Date:</b> $date_visit <br>
+                <b>Time:</b> $time_visit <br><br>
+                We will notify you once the staff approves your appointment.<br><br>
+                Thank you!
+            ";
 
-        $mail->send();
+            $mail->send();
+        } catch (\Exception $mailEx) {
+            // Email failed — log it but DO NOT crash the booking response.
+            error_log('Appointment email failed (ID ' . $appointment_id . '): ' . $mailEx->getMessage());
+        }
 
         header('Content-Type: application/json');
         echo json_encode([
@@ -804,11 +819,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const overlay = document.getElementById("loadingOverlay");
         overlay.style.display = "flex";
 
-        const formData = new FormData(appointmentForm);
-        try {
-            const response = await fetch(window.location.href, { method: 'POST', body: formData });
-            const result = await response.json();
+        // Safety net: force-hide loading after 30 seconds in case fetch hangs
+        const loadingTimeout = setTimeout(() => {
             overlay.style.display = "none";
+            messageDiv.textContent = 'Ang request ay tumatagal nang matagal. Pakisubukan ulit.';
+            messageDiv.className = 'form-message error';
+            messageDiv.style.display = 'block';
+        }, 30000);
+
+        try {
+            const response = await fetch(window.location.href, { method: 'POST', body: new FormData(appointmentForm) });
+            const result = await response.json();
 
             if (result.success) {
                 messageDiv.textContent = result.message;
@@ -825,10 +846,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 messageDiv.style.display = 'block';
             }
         } catch (err) {
-            overlay.style.display = "none";
-            messageDiv.textContent = 'May naganap na error sa pag-proseso.';
+            messageDiv.textContent = 'May naganap na error sa pag-proseso. Pakisubukan ulit.';
             messageDiv.className = 'form-message error';
             messageDiv.style.display = 'block';
+        } finally {
+            // ALWAYS hide the spinner — whether success, error, or exception
+            clearTimeout(loadingTimeout);
+            overlay.style.display = "none";
         }
     });
 });
