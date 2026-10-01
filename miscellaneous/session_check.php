@@ -106,13 +106,4 @@ if (!$exists) {
     exit;
 }
 
-// ── Single-session check ──────────────────────────────────────────────────────
-// If a session_token exists in DB but doesn't match ours, someone else logged in
-if ($myToken !== null && $dbToken !== null && !hash_equals($dbToken, $myToken)) {
-    session_unset();
-    session_destroy();
-    echo json_encode(['valid' => false, 'reason' => 'kicked']);
-    exit;
-}
-
 echo json_encode(['valid' => true]);

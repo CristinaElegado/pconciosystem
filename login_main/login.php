@@ -20,8 +20,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($admin) {
         if ($password === $admin['password']) {
-            $token = bin2hex(random_bytes(32));
+            // ── Single-session block ──────────────────────────────────────────
             $pdo->exec("ALTER TABLE admin ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
+            $existingToken = $pdo->prepare("SELECT session_token FROM admin WHERE id = :id LIMIT 1");
+            $existingToken->execute(['id' => $admin['id']]);
+            $tokenRow = $existingToken->fetch();
+            if (!empty($tokenRow['session_token'])) {
+                echo json_encode(['success' => false, 'message' => '⚠️ This account is already logged in on another device. Please log out from that device first.']);
+                exit;
+            }
+            // ─────────────────────────────────────────────────────────────────
+            $token = bin2hex(random_bytes(32));
             $pdo->prepare("UPDATE admin SET session_token = :token WHERE id = :id")->execute(['token' => $token, 'id' => $admin['id']]);
 
             $_SESSION['id'] = $admin['id'];
@@ -45,8 +54,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($dentist) {
         if (password_verify($password, $dentist['password_hash'])) {
-            $token = bin2hex(random_bytes(32));
+            // ── Single-session block ──────────────────────────────────────────
             $pdo->exec("ALTER TABLE dentist_accounts ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
+            $existingToken = $pdo->prepare("SELECT session_token FROM dentist_accounts WHERE id = :id LIMIT 1");
+            $existingToken->execute(['id' => $dentist['id']]);
+            $tokenRow = $existingToken->fetch();
+            if (!empty($tokenRow['session_token'])) {
+                echo json_encode(['success' => false, 'message' => '⚠️ This account is already logged in on another device. Please log out from that device first.']);
+                exit;
+            }
+            // ─────────────────────────────────────────────────────────────────
+            $token = bin2hex(random_bytes(32));
             $pdo->prepare("UPDATE dentist_accounts SET session_token = :token WHERE id = :id")->execute(['token' => $token, 'id' => $dentist['id']]);
 
             $_SESSION['id'] = $dentist['id'];
@@ -70,8 +88,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($staff) {
         if (password_verify($password, $staff['password_hash'])) {
-            $token = bin2hex(random_bytes(32));
+            // ── Single-session block ──────────────────────────────────────────
             $pdo->exec("ALTER TABLE staff_accounts ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
+            $existingToken = $pdo->prepare("SELECT session_token FROM staff_accounts WHERE id = :id LIMIT 1");
+            $existingToken->execute(['id' => $staff['id']]);
+            $tokenRow = $existingToken->fetch();
+            if (!empty($tokenRow['session_token'])) {
+                echo json_encode(['success' => false, 'message' => '⚠️ This account is already logged in on another device. Please log out from that device first.']);
+                exit;
+            }
+            // ─────────────────────────────────────────────────────────────────
+            $token = bin2hex(random_bytes(32));
             $pdo->prepare("UPDATE staff_accounts SET session_token = :token WHERE id = :id")->execute(['token' => $token, 'id' => $staff['id']]);
 
             $_SESSION['id'] = $staff['id'];
