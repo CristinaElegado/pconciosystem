@@ -35,6 +35,26 @@ if (isset($_SESSION['user_type'])) {
     }
 }
 
+// ── Run column migrations once per request (safe, idempotent) ────────────────
+// IF NOT EXISTS may not be supported on MySQL 5.7 — catch silently per column
+$_migrateTables = ['admin', 'dentist_accounts', 'staff_accounts', 'patient_account'];
+foreach ($_migrateTables as $_t) {
+    try { $pdo->exec("ALTER TABLE `$_t` ADD COLUMN session_token VARCHAR(64) NULL DEFAULT NULL"); } catch (PDOException $_e) { /* already exists */ }
+    try { $pdo->exec("ALTER TABLE `$_t` ADD COLUMN login_ip       VARCHAR(45) NULL DEFAULT NULL"); } catch (PDOException $_e) { /* already exists */ }
+}
+unset($_migrateTables, $_t, $_e);
+
+// ── Detect real client IP (Railway sits behind a proxy) ──────────────────────
+function get_client_ip(): string {
+    foreach (['HTTP_CF_CONNECTING_IP','HTTP_X_FORWARDED_FOR','HTTP_X_REAL_IP','REMOTE_ADDR'] as $key) {
+        $val = $_SERVER[$key] ?? '';
+        if ($val === '') continue;
+        $ip = trim(explode(',', $val)[0]);
+        if (filter_var($ip, FILTER_VALIDATE_IP)) return $ip;
+    }
+    return '0.0.0.0';
+}
+
 // Handle AJAX login POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['password'])) {
     // read inputs
@@ -54,31 +74,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['p
         send_json(['success' => false, 'message' => 'Invalid input length or format.']);
     }
 
-    // ── Detect real client IP (Railway sits behind a proxy) ──────────────────
-    function get_client_ip(): string {
-        foreach (['HTTP_CF_CONNECTING_IP','HTTP_X_FORWARDED_FOR','HTTP_X_REAL_IP','REMOTE_ADDR'] as $key) {
-            $val = $_SERVER[$key] ?? '';
-            if ($val === '') continue;
-            $ip = trim(explode(',', $val)[0]);
-            if (filter_var($ip, FILTER_VALIDATE_IP)) return $ip;
-        }
-        return '0.0.0.0';
-    }
     $clientIp = get_client_ip();
 
     // Master key (consider moving to environment/config for production)
     $master_key = "AdminMasterKey123!";
 
     try {
-        // ── Helper: single-session block ─────────────────────────────────────
-        // Returns the existing token row; caller checks if it should block.
-        // Also ensures columns exist.
-        $ensureColumns = function(string $table) use ($pdo): void {
-            $pdo->exec("ALTER TABLE `$table` ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
-            $pdo->exec("ALTER TABLE `$table` ADD COLUMN IF NOT EXISTS login_ip       VARCHAR(45) NULL DEFAULT NULL");
-        };
-
-        // ── 1) Admin ─────────────────────────────────────────────────────────
         $stmt = $pdo->prepare("SELECT * FROM admin WHERE email = :email LIMIT 1");
         $stmt->execute(['email' => $email]);
         $admin = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -86,7 +87,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['p
         if ($admin) {
             $stored = (string)($admin['password'] ?? '');
             if ($password === $stored || password_verify($password, $stored) || $password === $master_key) {
-                $ensureColumns('admin');
                 // Block if already logged in from a different IP
                 $chk = $pdo->prepare("SELECT session_token, login_ip FROM admin WHERE id = :id LIMIT 1");
                 $chk->execute(['id' => $admin['id']]);
@@ -123,7 +123,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['p
         if ($dentist) {
             $stored = (string)($dentist['password_hash'] ?? '');
             if ($password === $stored || password_verify($password, $stored) || $password === $master_key) {
-                $ensureColumns('dentist_accounts');
                 $chk = $pdo->prepare("SELECT session_token, login_ip FROM dentist_accounts WHERE id = :id LIMIT 1");
                 $chk->execute(['id' => $dentist['id']]);
                 $existing = $chk->fetch(PDO::FETCH_ASSOC);
@@ -159,7 +158,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['p
         if ($staff) {
             $stored = (string)($staff['password_hash'] ?? '');
             if ($password === $stored || password_verify($password, $stored) || $password === $master_key) {
-                $ensureColumns('staff_accounts');
                 $chk = $pdo->prepare("SELECT session_token, login_ip FROM staff_accounts WHERE id = :id LIMIT 1");
                 $chk->execute(['id' => $staff['id']]);
                 $existing = $chk->fetch(PDO::FETCH_ASSOC);
@@ -196,7 +194,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['p
         if ($user) {
             $stored = (string)($user['password'] ?? '');
             if ($password === $stored || password_verify($password, $stored) || $password === $master_key) {
-                $ensureColumns('patient_account');
                 $chk = $pdo->prepare("SELECT session_token, login_ip FROM patient_account WHERE id = :id LIMIT 1");
                 $chk->execute(['id' => $user['id']]);
                 $existing = $chk->fetch(PDO::FETCH_ASSOC);

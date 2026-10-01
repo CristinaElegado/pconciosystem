@@ -42,17 +42,12 @@ if (!isset($_SESSION['session_token'])) {
 
 include_once __DIR__ . '/database.php';
 
-// Ensure session_token and login_ip columns exist (safe to run every time, IF NOT EXISTS is cheap)
-try {
-    $pdo->exec("ALTER TABLE admin              ADD COLUMN IF NOT EXISTS session_token VARCHAR(64)  NULL DEFAULT NULL");
-    $pdo->exec("ALTER TABLE dentist_accounts   ADD COLUMN IF NOT EXISTS session_token VARCHAR(64)  NULL DEFAULT NULL");
-    $pdo->exec("ALTER TABLE staff_accounts     ADD COLUMN IF NOT EXISTS session_token VARCHAR(64)  NULL DEFAULT NULL");
-    $pdo->exec("ALTER TABLE patient_account    ADD COLUMN IF NOT EXISTS session_token VARCHAR(64)  NULL DEFAULT NULL");
-    $pdo->exec("ALTER TABLE admin              ADD COLUMN IF NOT EXISTS login_ip       VARCHAR(45)  NULL DEFAULT NULL");
-    $pdo->exec("ALTER TABLE dentist_accounts   ADD COLUMN IF NOT EXISTS login_ip       VARCHAR(45)  NULL DEFAULT NULL");
-    $pdo->exec("ALTER TABLE staff_accounts     ADD COLUMN IF NOT EXISTS login_ip       VARCHAR(45)  NULL DEFAULT NULL");
-    $pdo->exec("ALTER TABLE patient_account    ADD COLUMN IF NOT EXISTS login_ip       VARCHAR(45)  NULL DEFAULT NULL");
-} catch (PDOException $e) { /* silent */ }
+// Ensure session_token and login_ip columns exist (safe to run every time, catch if already exists)
+foreach (['admin','dentist_accounts','staff_accounts','patient_account'] as $_ct) {
+    try { $pdo->exec("ALTER TABLE `$_ct` ADD COLUMN session_token VARCHAR(64) NULL DEFAULT NULL"); } catch (PDOException $_ce) { /* already exists */ }
+    try { $pdo->exec("ALTER TABLE `$_ct` ADD COLUMN login_ip       VARCHAR(45) NULL DEFAULT NULL"); } catch (PDOException $_ce) { /* already exists */ }
+}
+unset($_ct, $_ce);
 
 $userId    = $_SESSION['id'];
 $userType  = $_SESSION['user_type'];

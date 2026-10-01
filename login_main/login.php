@@ -21,13 +21,15 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 }
 // ───────────────────────────────────────────────────────────────────────────────
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $Email = trim($_POST['email']);
-    $password = trim($_POST['password']);
+// ── Run column migrations once per request (safe, catch if already exists) ───
+$_loginMigTables = ['admin', 'dentist_accounts', 'staff_accounts'];
+foreach ($_loginMigTables as $_t) {
+    try { $pdo->exec("ALTER TABLE `$_t` ADD COLUMN session_token VARCHAR(64) NULL DEFAULT NULL"); } catch (PDOException $_e) { /* already exists */ }
+    try { $pdo->exec("ALTER TABLE `$_t` ADD COLUMN login_ip       VARCHAR(45) NULL DEFAULT NULL"); } catch (PDOException $_e) { /* already exists */ }
+}
+unset($_loginMigTables, $_t, $_e);
 
-    header('Content-Type: application/json');
-
-    // ── Detect real client IP (Railway sits behind a proxy) ──────────────────
+if (!function_exists('get_client_ip')) {
     function get_client_ip(): string {
         foreach (['HTTP_CF_CONNECTING_IP','HTTP_X_FORWARDED_FOR','HTTP_X_REAL_IP','REMOTE_ADDR'] as $key) {
             $val = $_SERVER[$key] ?? '';
@@ -37,6 +39,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         return '0.0.0.0';
     }
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $Email = trim($_POST['email']);
+    $password = trim($_POST['password']);
+
+    header('Content-Type: application/json');
+
     $clientIp = get_client_ip();
 
     $stmt = $pdo->prepare("SELECT * FROM admin WHERE email = :email LIMIT 1");
@@ -46,8 +56,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($admin) {
         if ($password === $admin['password']) {
             // ── Single-session block ──────────────────────────────────────────
-            $pdo->exec("ALTER TABLE admin ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
-            $pdo->exec("ALTER TABLE admin ADD COLUMN IF NOT EXISTS login_ip       VARCHAR(45) NULL DEFAULT NULL");
             $existingToken = $pdo->prepare("SELECT session_token, login_ip FROM admin WHERE id = :id LIMIT 1");
             $existingToken->execute(['id' => $admin['id']]);
             $tokenRow = $existingToken->fetch();
@@ -86,8 +94,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($dentist) {
         if (password_verify($password, $dentist['password_hash'])) {
             // ── Single-session block ──────────────────────────────────────────
-            $pdo->exec("ALTER TABLE dentist_accounts ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
-            $pdo->exec("ALTER TABLE dentist_accounts ADD COLUMN IF NOT EXISTS login_ip       VARCHAR(45) NULL DEFAULT NULL");
             $existingToken = $pdo->prepare("SELECT session_token, login_ip FROM dentist_accounts WHERE id = :id LIMIT 1");
             $existingToken->execute(['id' => $dentist['id']]);
             $tokenRow = $existingToken->fetch();
@@ -126,8 +132,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($staff) {
         if (password_verify($password, $staff['password_hash'])) {
             // ── Single-session block ──────────────────────────────────────────
-            $pdo->exec("ALTER TABLE staff_accounts ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
-            $pdo->exec("ALTER TABLE staff_accounts ADD COLUMN IF NOT EXISTS login_ip       VARCHAR(45) NULL DEFAULT NULL");
             $existingToken = $pdo->prepare("SELECT session_token, login_ip FROM staff_accounts WHERE id = :id LIMIT 1");
             $existingToken->execute(['id' => $staff['id']]);
             $tokenRow = $existingToken->fetch();
