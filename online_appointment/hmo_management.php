@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // hmo_management.php - Final Complete Code with Blue Tab Theme, HMO Member ID Fix & Notifications
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';

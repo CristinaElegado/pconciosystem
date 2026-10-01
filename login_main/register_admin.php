@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Redirect to setup.php which has the proper UI
 header("Location: /setup.php");
 exit;

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
 include __DIR__ . '/../miscellaneous/log_audit.php';

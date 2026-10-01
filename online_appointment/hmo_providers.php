@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // hmo_providers.php - Adjusted to match HMO Requests design style
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';

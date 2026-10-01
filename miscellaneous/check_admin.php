@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * check_admin.php
  * Checks if at least one admin exists in the database.
