@@ -280,6 +280,11 @@ include __DIR__ . '/../miscellaneous/sidebar.php';
                 </td>
                 <td><?= $h['restored_at'] ? date('M d, Y g:i A', strtotime($h['restored_at'])) : '—' ?></td>
                 <td>
+                  <?php if ($h['restored']): ?>
+                    <button type="button" class="btn-restore" disabled>
+                      <i class="fa-solid fa-check"></i> Restored
+                    </button>
+                  <?php else: ?>
                   <form method="post" action="../miscellaneous/do_restore.php" id="restoreForm_<?= $h['id'] ?>">
                     <input type="hidden" name="history_id"  value="<?= $h['id'] ?>">
                     <input type="hidden" name="backup_file" value="<?= htmlspecialchars($h['backup_file']) ?>">
@@ -288,6 +293,7 @@ include __DIR__ . '/../miscellaneous/sidebar.php';
                       <i class="fa-solid fa-rotate-left"></i> Restore
                     </button>
                   </form>
+                  <?php endif; ?>
                 </td>
               </tr>
               <?php endforeach; ?>
