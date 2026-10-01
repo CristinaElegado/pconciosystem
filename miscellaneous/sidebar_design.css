@@ -556,3 +556,53 @@ label {
   background: #fee2e2 !important;
   color: #dc2626 !important;
 }
+
+/* ===== Settings Submenu ===== */
+.has-submenu > .submenu-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  position: relative;
+}
+
+.submenu-arrow {
+  margin-left: auto;
+  font-size: 0.75rem;
+  transition: transform 0.3s ease;
+}
+
+.has-submenu.submenu-open > .submenu-toggle .submenu-arrow {
+  transform: rotate(180deg);
+}
+
+.submenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.submenu.open {
+  max-height: 200px;
+}
+
+.submenu li a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 25px 10px 50px;
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.submenu li a:hover,
+.submenu li a.active {
+  color: var(--primary-dark);
+  background: #f0f9ff;
+}

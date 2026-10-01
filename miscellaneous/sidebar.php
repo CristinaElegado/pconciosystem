@@ -96,7 +96,17 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <a href="../patient_account/patient_account.php" class="<?= $current_page == 'patient_account.php' ? 'active' : '' ?>"><i class="fa-solid fa-id-card"></i> Patient Accounts</a>
         <a href="../staff_account/staff_account.php" class="<?= $current_page == 'staff_account.php' ? 'active' : '' ?>"><i class="fa-solid fa-users"></i> Staff Accounts</a>
       </li>
-      <li><a href="../audit_trail/audit_trail.php" class="<?= $current_page == 'audit_trail.php' ? 'active' : '' ?>"><i class="fa-solid fa-clock-rotate-left"></i> Audit Trail</a></li>
+      <!-- Settings Dropdown -->
+      <li class="has-submenu <?= in_array($current_page, ['audit_trail.php', 'admin_clear_data.php']) ? 'submenu-open' : '' ?>">
+        <a href="#" class="submenu-toggle <?= in_array($current_page, ['audit_trail.php', 'admin_clear_data.php']) ? 'active' : '' ?>" onclick="toggleSubmenu(this); return false;">
+          <i class="fa-solid fa-gear"></i> Settings
+          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+        </a>
+        <ul class="submenu <?= in_array($current_page, ['audit_trail.php', 'admin_clear_data.php']) ? 'open' : '' ?>">
+          <li><a href="../audit_trail/audit_trail.php" class="<?= $current_page == 'audit_trail.php' ? 'active' : '' ?>"><i class="fa-solid fa-clock-rotate-left"></i> Audit Trail</a></li>
+          <li><a href="../admin_clear_data.php" class="<?= $current_page == 'admin_clear_data.php' ? 'active' : '' ?>"><i class="fa-solid fa-trash-can"></i> Truncate Data</a></li>
+        </ul>
+      </li>
       <li><a href="../main_page/logout.php" class="logout-link" onclick="event.preventDefault(); showConfirmDialog('Are you sure you want to logout?', function(){ window.location.href='../main_page/logout.php'; }, { title: 'Logout', icon: 'logout', okText: 'Logout' });"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
 
     <?php elseif (isset($_SESSION['user_type']) && $_SESSION['user_type'] === "staff"): ?>
@@ -158,6 +168,21 @@ $current_page = basename($_SERVER['PHP_SELF']);
 </style>
 
 <script>
+  function toggleSubmenu(el) {
+    const li = el.closest('.has-submenu');
+    const submenu = li.querySelector('.submenu');
+    const isOpen = li.classList.contains('submenu-open');
+    // Close all other submenus
+    document.querySelectorAll('.has-submenu.submenu-open').forEach(item => {
+      item.classList.remove('submenu-open');
+      item.querySelector('.submenu').classList.remove('open');
+    });
+    if (!isOpen) {
+      li.classList.add('submenu-open');
+      submenu.classList.add('open');
+    }
+  }
+
   const menuBtn = document.getElementById("menu-btn");
   const closeBtn = document.getElementById("close-sidebar");
   const sidebar = document.getElementById("sidebar");
