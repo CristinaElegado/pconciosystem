@@ -9,5 +9,6 @@
       "src": "/(.*)",
       "dest": "/index.php"
     }
-  ]
+  ],
+  "ignoreCommand": "echo 'skip'"
 }
