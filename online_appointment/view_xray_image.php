@@ -1,4 +1,4 @@
-]<?php
+<?php
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
 include __DIR__ . '/../miscellaneous/auth_check.php';
@@ -21,24 +21,7 @@ if (!$row || empty($row['dental_toothxray'])) {
 $dbPath = trim($row['dental_toothxray']);
 $fileName = basename($dbPath);
 
-// Eksaktong path base sa nakita natin sa folder structure mo
-$filePath = __DIR__ . '/uploads/xrays/' . $fileName;
-
-// Sakaling ang file ay nasa ibang katabing folder, may backup checks din tayo dito:
-if (!file_exists($filePath)) {
-    $alternativePaths = [
-        __DIR__ . '/../uploads/xrays/' . $fileName,
-        __DIR__ . '/xrays/' . $fileName,
-        __DIR__ . '/' . $dbPath
-    ];
-    
-    foreach ($alternativePaths as $alt) {
-        if (file_exists($alt) && !is_dir($alt)) {
-            $filePath = $alt;
-            break;
-        }
-    }
-}
+$filePath = __DIR__ . '/../uploads/xrays/' . $fileName;
 
 if (!file_exists($filePath) || is_dir($filePath)) {
     http_response_code(404);
@@ -60,4 +43,3 @@ header("Content-Type: " . $contentType);
 header("Content-Length: " . filesize($filePath));
 readfile($filePath);
 exit;
-?>

@@ -342,52 +342,49 @@ table tbody tr:hover {
 
 /* Modern Buttons */
 button, .btn-add, .btn-edit, .btn-view, .btn-delete, .btn-cancel, .btn-save, .btn-manage {
-  cursor: pointer;
-  border: none;
-  border-radius: 0.5rem;
-  padding: 8px 16px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  text-decoration: none;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  cursor: pointer !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 7px 16px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  transition: background 0.2s !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  min-width: 64px !important;
+  height: 32px !important;
+  line-height: 1 !important;
+  background-color: #0ea5e9 !important;
+  color: white !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+}
+
+button:hover, .btn-add:hover, .btn-edit:hover, .btn-view:hover,
+.btn-delete:hover, .btn-cancel:hover, .btn-save:hover, .btn-manage:hover {
+  background-color: #0284c7 !important;
+  color: white !important;
+  opacity: 1 !important;
 }
 
 .btn-add, .btn-save {
-  background-color: var(--primary-color);
-  color: white;
+  background-color: #0ea5e9 !important;
+  color: white !important;
 }
-.btn-add:hover, .btn-save:hover {
-  background-color: var(--primary-dark);
-  transform: translateY(-1px);
-}
-
 .btn-edit, .btn-manage {
-  background-color: #3b82f6;
-  color: white;
+  background-color: #0ea5e9 !important;
+  color: white !important;
 }
-.btn-edit:hover, .btn-manage:hover {
-  background-color: #2563eb;
-}
-
 .btn-delete, .btn-cancel {
-  background-color: var(--danger-color);
-  color: white;
+  background-color: #0ea5e9 !important;
+  color: white !important;
 }
-.btn-delete:hover, .btn-cancel:hover {
-  background-color: #dc2626;
-}
-
 .btn-view {
-  background-color: #10b981;
-  color: white;
-}
-.btn-view:hover {
-  background-color: #059669;
+  background-color: #0ea5e9 !important;
+  color: white !important;
 }
 
 /* Modern Forms */
@@ -557,52 +554,98 @@ label {
   color: #dc2626 !important;
 }
 
-/* ===== Settings Submenu ===== */
-.has-submenu > .submenu-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 10px;
-  cursor: pointer;
-  position: relative;
-}
+/* ============================================================
+   RESPONSIVE — MOBILE FIRST (added for full mobile support)
+   ============================================================ */
+@media (max-width: 768px) {
+  /* Sidebar: slide in from left using transform */
+  .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 260px !important;
+    height: 100vh !important;
+    z-index: 999999 !important;
+    transform: translateX(-100%) !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: transform 0.3s ease-in-out, visibility 0.3s ease-in-out, opacity 0.3s ease-in-out !important;
+  }
 
-.submenu-arrow {
-  margin-left: auto;
-  font-size: 0.75rem;
-  transition: transform 0.3s ease;
-}
+  .sidebar.active {
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
 
-.has-submenu.submenu-open > .submenu-toggle .submenu-arrow {
-  transform: rotate(180deg);
-}
+  /* Topbar: full-width, flush left */
+  .topbar {
+    left: 0 !important;
+    width: 100% !important;
+    padding: 0 12px !important;
+    flex-wrap: nowrap !important;
+    min-height: 60px !important;
+    height: auto !important;
+  }
 
-.submenu {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-}
+  .topbar-left {
+    gap: 8px !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
 
-.submenu.open {
-  max-height: 200px;
-}
+  .topbar .logo,
+  .clinic-title-top,
+  .logo {
+    font-size: 11px !important;
+    max-width: 55% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
 
-.submenu li a {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 25px 10px 50px;
-  font-size: 0.9rem;
-  color: var(--secondary-color);
-  text-decoration: none;
-  transition: all 0.2s;
-}
+  .topbar h3,
+  .topbar span,
+  .topbar div:last-child {
+    font-size: 10px !important;
+    white-space: nowrap !important;
+  }
 
-.submenu li a:hover,
-.submenu li a.active {
-  color: var(--primary-dark);
-  background: #f0f9ff;
+  /* Main content: no left margin, sit below topbar */
+  .main-content {
+    margin-left: 0 !important;
+    margin-top: 60px !important;
+    padding: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Tables: horizontal scroll */
+  .table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .table-wrapper table {
+    min-width: 600px !important;
+  }
+
+  /* Modals: near full-width */
+  .modal-content {
+    width: 95% !important;
+    max-width: 95% !important;
+    padding: 16px !important;
+  }
+
+  /* Form elements: full width */
+  input, select, textarea {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  button {
+    font-size: 13px !important;
+  }
 }

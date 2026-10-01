@@ -152,52 +152,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['p
     }
 }
 
-// ── Handle testimonial submission ──────────────────────────────────────────────
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['testimonial_submit'])) {
-    $name    = trim(strip_tags($_POST['patient_name'] ?? ''));
-    $rating  = max(1, min(5, (int)($_POST['rating'] ?? 5)));
-    $comment = trim(strip_tags($_POST['comment'] ?? ''));
-
-    if ($name !== '' && $comment !== '' && $rating >= 1) {
-        try {
-            $pdo->prepare("CREATE TABLE IF NOT EXISTS `testimonials` (
-                `id` int(11) NOT NULL AUTO_INCREMENT,
-                `patient_name` varchar(100) NOT NULL,
-                `rating` tinyint(1) NOT NULL DEFAULT 5,
-                `comment` text NOT NULL,
-                `is_approved` tinyint(1) NOT NULL DEFAULT 0,
-                `submitted_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                PRIMARY KEY (`id`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4")->execute();
-
-            $stmt = $pdo->prepare("INSERT INTO testimonials (patient_name, rating, comment, is_approved) VALUES (:n, :r, :c, 0)");
-            $stmt->execute(['n' => $name, 'r' => $rating, 'c' => $comment]);
-            $testimonial_success = "Thank you for your feedback! Your review will be visible after approval.";
-        } catch (PDOException $e) {
-            $testimonial_error = "Could not submit review. Please try again.";
-        }
-    } else {
-        $testimonial_error = "Please fill in your name, select a star rating, and write a comment.";
-    }
-}
-
-// ── Fetch approved testimonials from DB ───────────────────────────────────────
-$testimonials = [];
-try {
-    $pdo->exec("CREATE TABLE IF NOT EXISTS `testimonials` (
-        `id` int(11) NOT NULL AUTO_INCREMENT,
-        `patient_name` varchar(100) NOT NULL,
-        `rating` tinyint(1) NOT NULL DEFAULT 5,
-        `comment` text NOT NULL,
-        `is_approved` tinyint(1) NOT NULL DEFAULT 0,
-        `submitted_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-    $testimonials = $pdo->query("SELECT * FROM testimonials WHERE is_approved = 1 ORDER BY submitted_at DESC")->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $testimonials = [];
-}
-
 // If not POST login, continue to render the page (GET)
 ?><!DOCTYPE html>
 <html lang="en">
@@ -762,96 +716,6 @@ nav a:hover {
     font-weight: 600;
     color: var(--primary-pink);
 }
-
-/* ── Testimonial submit button ── */
-.testimonials-submit-wrap {
-    text-align: center;
-    margin-top: 2.5rem;
-}
-.btn-leave-review {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 13px 30px; background: var(--primary-pink);
-    color: #fff; border: none; border-radius: 50px;
-    font-size: 1rem; font-weight: 600; cursor: pointer;
-    transition: background .2s, transform .15s;
-    text-decoration: none;
-}
-.btn-leave-review:hover { background: #d63068; transform: translateY(-2px); }
-
-/* ── Testimonial Modal ── */
-.testimonial-modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.5); z-index: 9999;
-    justify-content: center; align-items: center;
-}
-.testimonial-modal-overlay.open { display: flex; }
-.testimonial-modal {
-    background: #fff; border-radius: 16px; padding: 36px 32px;
-    max-width: 480px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,.2);
-    animation: fadeUp .25s ease;
-}
-@keyframes fadeUp {
-    from { opacity:0; transform: translateY(20px); }
-    to   { opacity:1; transform: translateY(0); }
-}
-.testimonial-modal h3 { font-size: 1.3rem; color: #1e293b; margin-bottom: 20px; }
-.testimonial-modal label { font-size: .875rem; font-weight: 600; color: #475569; display:block; margin-bottom: 6px; }
-.testimonial-modal input[type=text],
-.testimonial-modal textarea {
-    width: 100%; padding: 11px 14px; border: 1px solid #e2e8f0;
-    border-radius: 8px; font-family: 'Poppins',sans-serif;
-    font-size: .9rem; margin-bottom: 16px; resize: vertical;
-    transition: border .2s;
-}
-.testimonial-modal input[type=text]:focus,
-.testimonial-modal textarea:focus { outline: none; border-color: var(--primary-pink); }
-
-/* Star rating picker */
-.star-picker { display: flex; gap: 4px; margin-bottom: 16px; }
-.star-picker input { display: none; }
-.star-picker label {
-    font-size: 2rem; color: #d1d5db; cursor: pointer;
-    transition: color .1s, transform .1s;
-    user-select: none;
-}
-.star-picker label.hovered,
-.star-picker label.selected { color: #fcd34d; transform: scale(1.15); }
-
-.testimonial-modal .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 4px; }
-.testimonial-modal .btn-submit-review {
-    padding: 10px 24px; background: var(--primary-pink); color: #fff;
-    border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: .2s;
-}
-.testimonial-modal .btn-submit-review:hover { background: #d63068; }
-.testimonial-modal .btn-cancel-review {
-    padding: 10px 20px; background: #f1f5f9; color: #475569;
-    border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: .2s;
-}
-.testimonial-modal .btn-cancel-review:hover { background: #e2e8f0; }
-.alert-success-review { background: #dcfce7; color: #16a34a; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: .875rem; }
-.alert-error-review   { background: #fee2e2; color: #dc2626; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: .875rem; }
-
-/* ── Testimonial card clickable ── */
-.testimonial-card { cursor: pointer; }
-.testimonial-full-modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.5); z-index: 9999;
-    justify-content: center; align-items: center;
-}
-.testimonial-full-modal-overlay.open { display: flex; }
-.testimonial-full-modal {
-    background: #fff; border-radius: 16px; padding: 36px 32px;
-    max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,.2);
-    animation: fadeUp .25s ease; position: relative;
-}
-.testimonial-full-modal .close-full-modal {
-    position: absolute; top: 14px; right: 18px;
-    background: none; border: none; font-size: 1.4rem;
-    cursor: pointer; color: #94a3b8;
-}
-.testimonial-full-modal .full-stars { color: #fcd34d; font-size: 1.6rem; margin-bottom: 14px; }
-.testimonial-full-modal .full-quote { font-style: italic; color: #334155; line-height: 1.7; margin-bottom: 16px; font-size: 1rem; }
-.testimonial-full-modal .full-author { font-weight: 700; color: var(--primary-pink); }
 
 /* ========================================
    FAQ SECTION
@@ -1695,124 +1559,23 @@ form button:disabled {
 <section id="testimonials" class="testimonials-section scroll-animate">
     <h2 class="testimonials-title">What Our Patients Say</h2>
     <div class="testimonials-grid">
-        <?php if (!empty($testimonials)): ?>
-            <?php foreach ($testimonials as $t): ?>
-            <div class="testimonial-card scroll-animate-service"
-                 onclick="openFullTestimonial(<?= htmlspecialchars(json_encode([
-                     'name'   => $t['patient_name'],
-                     'rating' => (int)$t['rating'],
-                     'comment'=> $t['comment'],
-                 ]), ENT_QUOTES) ?>)">
-                <div class="testimonial-stars">
-                    <?= str_repeat('★', (int)$t['rating']) . str_repeat('☆', 5 - (int)$t['rating']) ?>
-                </div>
-                <p class="testimonial-quote">"<?= htmlspecialchars($t['comment']) ?>"</p>
-                <p class="testimonial-author">- <?= htmlspecialchars($t['patient_name']) ?></p>
-            </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <p style="text-align:center;color:#94a3b8;grid-column:1/-1">No reviews yet. Be the first to leave one!</p>
-        <?php endif; ?>
-    </div>
-
-    <!-- Leave a Review button -->
-    <div class="testimonials-submit-wrap">
-        <button class="btn-leave-review" onclick="document.getElementById('reviewModal').classList.add('open')">
-            <i class="fa-solid fa-star"></i> Leave a Review
-        </button>
+        <div class="testimonial-card scroll-animate-service">
+            <div class="testimonial-stars">★★★★★</div> 
+            <p class="testimonial-quote">"Awesome doctor. She explains everything well and set your expectation before the process. The tooth extraction is also very cheap and my health card covered both cleaning and 2 pasta."</p>
+            <p class="testimonial-author">- Ramil Nardo</p>
+        </div>
+        <div class="testimonial-card scroll-animate-service">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-quote">"The doc is good at explaining things regarding teeth and it's easy to use my health card here. I just need to schedule days for the appointment so the process goes quickly."</p>
+            <p class="testimonial-author">- Marvelous Advincula</p>
+        </div>
+        <div class="testimonial-card scroll-animate-service">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-quote">"Very professional, good dentist, very light-handed and affordable"</p>
+            <p class="testimonial-author">- いいえ</p>
+        </div>
     </div>
 </section>
-
-<!-- ── Review Submit Modal ── -->
-<div class="testimonial-modal-overlay" id="reviewModal">
-    <div class="testimonial-modal">
-        <h3><i class="fa-solid fa-star" style="color:#fcd34d"></i> Share Your Experience</h3>
-
-        <?php if (!empty($testimonial_success)): ?>
-            <div class="alert-success-review"><?= htmlspecialchars($testimonial_success) ?></div>
-        <?php endif; ?>
-        <?php if (!empty($testimonial_error)): ?>
-            <div class="alert-error-review"><?= htmlspecialchars($testimonial_error) ?></div>
-        <?php endif; ?>
-
-        <form method="POST">
-            <input type="hidden" name="testimonial_submit" value="1">
-
-            <label>Your Name</label>
-            <input type="text" name="patient_name" placeholder="e.g. Juan dela Cruz" required maxlength="100">
-
-            <label>Rating</label>
-            <div class="star-picker" id="starPicker">
-                <label data-val="1">★</label>
-                <label data-val="2">★</label>
-                <label data-val="3">★</label>
-                <label data-val="4">★</label>
-                <label data-val="5">★</label>
-            </div>
-            <input type="hidden" name="rating" id="ratingInput" value="0">
-
-            <label>Your Comment</label>
-            <textarea name="comment" rows="4" placeholder="Tell us about your experience..." required maxlength="1000"></textarea>
-
-            <div class="modal-actions">
-                <button type="button" class="btn-cancel-review" onclick="document.getElementById('reviewModal').classList.remove('open')">Cancel</button>
-                <button type="submit" class="btn-submit-review"><i class="fa-solid fa-paper-plane"></i> Submit Review</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- ── Full Testimonial View Modal ── -->
-<div class="testimonial-full-modal-overlay" id="fullTestimonialModal">
-    <div class="testimonial-full-modal">
-        <button class="close-full-modal" onclick="document.getElementById('fullTestimonialModal').classList.remove('open')">✕</button>
-        <div class="full-stars" id="fullStars"></div>
-        <p class="full-quote" id="fullQuote"></p>
-        <p class="full-author" id="fullAuthor"></p>
-    </div>
-</div>
-
-<script>
-function openFullTestimonial(data) {
-    document.getElementById('fullStars').textContent = '★'.repeat(data.rating) + '☆'.repeat(5 - data.rating);
-    document.getElementById('fullQuote').textContent  = '"' + data.comment + '"';
-    document.getElementById('fullAuthor').textContent = '— ' + data.name;
-    document.getElementById('fullTestimonialModal').classList.add('open');
-}
-// Close modals on overlay click
-document.getElementById('reviewModal').addEventListener('click', function(e){ if(e.target===this) this.classList.remove('open'); });
-document.getElementById('fullTestimonialModal').addEventListener('click', function(e){ if(e.target===this) this.classList.remove('open'); });
-<?php if (!empty($testimonial_success)): ?>
-document.addEventListener('DOMContentLoaded', function(){ document.getElementById('reviewModal').classList.add('open'); });
-<?php endif; ?>
-
-// ── JS Star Picker ──────────────────────────────────────────────────────────
-(function() {
-    const picker = document.getElementById('starPicker');
-    const input  = document.getElementById('ratingInput');
-    if (!picker) return;
-
-    const stars = Array.from(picker.querySelectorAll('label'));
-    let selected = 0;
-
-    function highlight(upTo) {
-        stars.forEach((s, i) => {
-            s.classList.toggle('hovered', i < upTo);
-            s.classList.toggle('selected', i < upTo);
-        });
-    }
-
-    stars.forEach((star, idx) => {
-        star.addEventListener('mouseenter', () => highlight(idx + 1));
-        star.addEventListener('mouseleave', () => highlight(selected));
-        star.addEventListener('click', () => {
-            selected = idx + 1;
-            input.value = selected;
-            highlight(selected);
-        });
-    });
-})();
-</script>
 
 <section id="services" class="service-section scroll-animate">
     <h2>SERVICES</h2>
@@ -1965,7 +1728,7 @@ const isLoggedIn = <?= isset($_SESSION['user_name']) ? 'true' : 'false'; ?>;
 // Listen for cross-tab logout
 window.addEventListener('storage', function(e) {
     if (e.key === 'logoutEvent' && isLoggedIn) {
-        alert('You have been logged out from another tab.');
+        showAlert('You have been logged out from another tab.');
         window.location.href = 'pconcio_main.php';
     }
 });
@@ -2253,3 +2016,4 @@ function toggleLoginPasswordVisibility() {
 </script>
 
 </html>
+

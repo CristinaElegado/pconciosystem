@@ -48,7 +48,7 @@ try {
                 echo json_encode([
                     'valid'        => false,
                     'reason'       => 'no_admin',
-                    'register_url' => '/login_main/register_admin.php'
+                    'register_url' => '/setup.php'
                 ]);
             } else {
                 // May ibang admin — redirect sa login lang

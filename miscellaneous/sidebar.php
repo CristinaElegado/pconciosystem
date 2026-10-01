@@ -23,12 +23,46 @@ $current_page = basename($_SERVER['PHP_SELF']);
     
     <?php if (isset($_SESSION['user_type']) && $_SESSION['user_type'] === "admin"): ?>
         <div class="topbar-right">
+          <!-- Expiry Notification Bell (Admin) -->
+          <div class="notif-bell-wrapper" id="notifBellWrapper">
+            <i class="fa-solid fa-bell notif-bell-icon" id="notifBellIcon" onclick="toggleNotifDropdown()" title="Inventory Expiry Alerts"></i>
+            <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+            <div class="notif-dropdown" id="notifDropdown">
+              <div class="notif-dropdown-header">
+                <i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i>
+                Inventory Expiry Alerts
+              </div>
+              <div id="notifDropdownBody" class="notif-dropdown-body">
+                <div class="notif-loading">Loading...</div>
+              </div>
+              <div class="notif-dropdown-footer">
+                <a href="../inventory/inventory.php">View Inventory</a>
+              </div>
+            </div>
+          </div>
           <i class="fa-solid fa-rotate" id="globalRefreshBtn" title="Refresh"></i>
           <h3>Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h3>
         </div>
 
     <?php elseif (isset($_SESSION['user_type']) && $_SESSION['user_type'] === "staff"): ?>
         <div class="topbar-right">
+          <!-- Expiry Notification Bell (Staff) -->
+          <div class="notif-bell-wrapper" id="notifBellWrapper">
+            <i class="fa-solid fa-bell notif-bell-icon" id="notifBellIcon" onclick="toggleNotifDropdown()" title="Inventory Expiry Alerts"></i>
+            <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+            <div class="notif-dropdown" id="notifDropdown">
+              <div class="notif-dropdown-header">
+                <i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i>
+                Inventory Expiry Alerts
+              </div>
+              <div id="notifDropdownBody" class="notif-dropdown-body">
+                <div class="notif-loading">Loading...</div>
+              </div>
+              <div class="notif-dropdown-footer">
+                <a href="../inventory/inventory.php">View Inventory</a>
+              </div>
+            </div>
+          </div>
           <i class="fa-solid fa-rotate" id="globalRefreshBtn" title="Refresh"></i>
           <h3>Welcome, 
             <?php echo htmlspecialchars($_SESSION['username']); ?> 
@@ -96,16 +130,14 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <a href="../patient_account/patient_account.php" class="<?= $current_page == 'patient_account.php' ? 'active' : '' ?>"><i class="fa-solid fa-id-card"></i> Patient Accounts</a>
         <a href="../staff_account/staff_account.php" class="<?= $current_page == 'staff_account.php' ? 'active' : '' ?>"><i class="fa-solid fa-users"></i> Staff Accounts</a>
       </li>
-      <!-- Settings Dropdown -->
-      <li class="has-submenu <?= in_array($current_page, ['audit_trail.php', 'admin_clear_data.php', 'testimonials_approval.php']) ? 'submenu-open' : '' ?>">
-        <a href="#" class="submenu-toggle <?= in_array($current_page, ['audit_trail.php', 'admin_clear_data.php', 'testimonials_approval.php']) ? 'active' : '' ?>" onclick="toggleSubmenu(this); return false;">
-          <i class="fa-solid fa-gear"></i> Settings
-          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
-        </a>
-        <ul class="submenu <?= in_array($current_page, ['audit_trail.php', 'admin_clear_data.php', 'testimonials_approval.php']) ? 'open' : '' ?>">
+      <li class="accordion-item <?= in_array($current_page, ['settings.php','audit_trail.php']) ? 'accordion-open' : '' ?>">
+        <div class="accordion-toggle" onclick="toggleAccordion(this)">
+          <span><i class="fa-solid fa-gear"></i> Settings</span>
+          <i class="fa-solid fa-chevron-up accordion-arrow"></i>
+        </div>
+        <ul class="accordion-sub">
           <li><a href="../audit_trail/audit_trail.php" class="<?= $current_page == 'audit_trail.php' ? 'active' : '' ?>"><i class="fa-solid fa-clock-rotate-left"></i> Audit Trail</a></li>
-          <li><a href="../admin_clear_data.php" class="<?= $current_page == 'admin_clear_data.php' ? 'active' : '' ?>"><i class="fa-solid fa-trash-can"></i> Truncate Data</a></li>
-          <li><a href="../testimonials_approval.php" class="<?= $current_page == 'testimonials_approval.php' ? 'active' : '' ?>"><i class="fa-solid fa-star"></i> Testimonial Approvals</a></li>
+          <li><a href="../admin/settings.php" class="<?= $current_page == 'settings.php' ? 'active' : '' ?>"><i class="fa-solid fa-database"></i> Truncate / Restore</a></li>
         </ul>
       </li>
       <li><a href="../main_page/logout.php" class="logout-link" onclick="event.preventDefault(); showConfirmDialog('Are you sure you want to logout?', function(){ window.location.href='../main_page/logout.php'; }, { title: 'Logout', icon: 'logout', okText: 'Logout' });"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
@@ -144,6 +176,59 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <div class="overlay" id="overlay"></div>
 
 <style>
+  /* ====== SETTINGS ACCORDION ====== */
+  .accordion-item { list-style: none; }
+  .accordion-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    cursor: pointer;
+    color: #334155;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: background 0.18s;
+    user-select: none;
+  }
+  .accordion-toggle:hover { background: rgba(14,165,233,0.08); color: #0ea5e9; }
+  .accordion-toggle span { display: flex; align-items: center; gap: 10px; }
+  .accordion-arrow {
+    font-size: 0.75rem;
+    transition: transform 0.25s ease;
+    transform: rotate(180deg); /* points up = closed */
+  }
+  .accordion-item.accordion-open .accordion-arrow {
+    transform: rotate(0deg); /* points up = open */
+  }
+  .accordion-sub {
+    list-style: none;
+    padding: 0 0 0 18px;
+    margin: 0;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease;
+  }
+  .accordion-item.accordion-open .accordion-sub {
+    max-height: 200px;
+  }
+  .accordion-sub li a {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 14px;
+    font-size: 0.88rem;
+    color: #475569;
+    border-radius: 7px;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+  }
+  .accordion-sub li a:hover, .accordion-sub li a.active {
+    background: rgba(14,165,233,0.12);
+    color: #0ea5e9;
+    font-weight: 600;
+  }
+
   .topbar-right {
     display: flex;
     align-items: center;
@@ -166,24 +251,175 @@ $current_page = basename($_SERVER['PHP_SELF']);
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
   }
+
+  /* ====== NOTIFICATION BELL ====== */
+  .notif-bell-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .notif-bell-icon {
+    font-size: 1.2rem;
+    color: #0ea5e9;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    transition: background 0.2s, color 0.2s;
+    line-height: 1;
+  }
+  .notif-bell-icon:hover {
+    background: #e0f2fe;
+  }
+  .notif-bell-icon.notif-has-alerts {
+    color: #f59e0b;
+    animation: bellRing 1.2s ease infinite;
+  }
+  @keyframes bellRing {
+    0%,100% { transform: rotate(0deg); }
+    15%      { transform: rotate(18deg); }
+    30%      { transform: rotate(-18deg); }
+    45%      { transform: rotate(12deg); }
+    60%      { transform: rotate(-12deg); }
+    75%      { transform: rotate(6deg); }
+    90%      { transform: rotate(-6deg); }
+  }
+  .notif-badge {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 17px;
+    height: 17px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 0 4px;
+    pointer-events: none;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+    z-index: 10;
+  }
+  /* Dropdown panel */
+  .notif-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 320px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    z-index: 99999;
+    overflow: hidden;
+    animation: notifFadeIn 0.18s ease;
+  }
+  .notif-dropdown.open {
+    display: block;
+  }
+  @keyframes notifFadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .notif-dropdown-header {
+    background: #0ea5e9;
+    color: #fff;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: Poppins, sans-serif;
+  }
+  .notif-dropdown-body {
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 6px 0;
+  }
+  .notif-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.15s;
+    cursor: default;
+  }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-item:hover { background: #f8fafc; }
+  .notif-item-icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    margin-top: 2px;
+  }
+  .notif-item-icon.expired   { background: #fee2e2; color: #ef4444; }
+  .notif-item-icon.expiring  { background: #fef3c7; color: #f59e0b; }
+  .notif-item-text { flex: 1; }
+  .notif-item-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1e293b;
+    font-family: Poppins, sans-serif;
+    line-height: 1.3;
+  }
+  .notif-item-detail {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin-top: 2px;
+    font-family: Poppins, sans-serif;
+  }
+  .notif-item-status {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 999px;
+    margin-top: 4px;
+    display: inline-block;
+  }
+  .notif-item-status.expired  { background: #fee2e2; color: #ef4444; }
+  .notif-item-status.expiring { background: #fef3c7; color: #b45309; }
+  .notif-empty {
+    text-align: center;
+    padding: 24px 16px;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-family: Poppins, sans-serif;
+  }
+  .notif-empty i { font-size: 1.8rem; display: block; margin-bottom: 8px; color: #cbd5e1; }
+  .notif-loading {
+    text-align: center;
+    padding: 20px;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-family: Poppins, sans-serif;
+  }
+  .notif-dropdown-footer {
+    padding: 10px 16px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+  }
+  .notif-dropdown-footer a {
+    color: #0ea5e9;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    font-family: Poppins, sans-serif;
+  }
+  .notif-dropdown-footer a:hover { text-decoration: underline; }
 </style>
 
 <script>
-  function toggleSubmenu(el) {
-    const li = el.closest('.has-submenu');
-    const submenu = li.querySelector('.submenu');
-    const isOpen = li.classList.contains('submenu-open');
-    // Close all other submenus
-    document.querySelectorAll('.has-submenu.submenu-open').forEach(item => {
-      item.classList.remove('submenu-open');
-      item.querySelector('.submenu').classList.remove('open');
-    });
-    if (!isOpen) {
-      li.classList.add('submenu-open');
-      submenu.classList.add('open');
-    }
-  }
-
   const menuBtn = document.getElementById("menu-btn");
   const closeBtn = document.getElementById("close-sidebar");
   const sidebar = document.getElementById("sidebar");
@@ -199,6 +435,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
     const dropdown = document.getElementById("sidebarProfileDropdown");
     dropdown.classList.toggle("show");
   };
+
+  function toggleAccordion(el) {
+    const item = el.closest('.accordion-item');
+    item.classList.toggle('accordion-open');
+  }
 
   menuBtn?.addEventListener("click", toggleSidebar);
   closeBtn?.addEventListener("click", toggleSidebar);
@@ -268,6 +509,82 @@ $current_page = basename($_SERVER['PHP_SELF']);
   if (refreshBtn) {
     refreshBtn.addEventListener('click', doSilentRefresh);
   }
+
+  // ====== EXPIRY NOTIFICATION BELL ======
+  function fetchExpiryNotifications() {
+    const badge   = document.getElementById('notifBadge');
+    const bell    = document.getElementById('notifBellIcon');
+    const body    = document.getElementById('notifDropdownBody');
+    if (!badge || !bell || !body) return;
+
+    fetch('/miscellaneous/get_expiry_notifications.php', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(data => {
+        const count = data.count || 0;
+
+        // Update badge
+        if (count > 0) {
+          badge.textContent = count > 99 ? '99+' : count;
+          badge.style.display = 'flex';
+          bell.classList.add('notif-has-alerts');
+        } else {
+          badge.style.display = 'none';
+          bell.classList.remove('notif-has-alerts');
+        }
+
+        // Build dropdown items
+        if (!data.items || data.items.length === 0) {
+          body.innerHTML = '<div class="notif-empty"><i class="fa-solid fa-circle-check"></i>No expiry alerts. All items are good!</div>';
+          return;
+        }
+
+        let html = '';
+        data.items.forEach(function(item) {
+          const isExpired  = item.status === 'EXPIRED';
+          const iconClass  = isExpired ? 'expired'  : 'expiring';
+          const icon       = isExpired ? 'fa-skull-crossbones' : 'fa-clock';
+          html += `
+            <div class="notif-item">
+              <div class="notif-item-icon ${iconClass}">
+                <i class="fa-solid ${icon}"></i>
+              </div>
+              <div class="notif-item-text">
+                <div class="notif-item-name">${item.item_name}</div>
+                <div class="notif-item-detail">Exp: ${item.expiration_date} &bull; Qty: ${item.quantity}</div>
+                <span class="notif-item-status ${iconClass}">${item.status}</span>
+              </div>
+            </div>`;
+        });
+        body.innerHTML = html;
+      })
+      .catch(function() {
+        const b = document.getElementById('notifBadge');
+        if (b) b.style.display = 'none';
+      });
+  }
+
+  function toggleNotifDropdown() {
+    const dropdown = document.getElementById('notifDropdown');
+    if (!dropdown) return;
+    const isOpen = dropdown.classList.contains('open');
+    dropdown.classList.toggle('open', !isOpen);
+    if (!isOpen) fetchExpiryNotifications(); // Always refresh on open
+  }
+
+  // Close dropdown when clicking outside the bell wrapper
+  document.addEventListener('click', function(e) {
+    const wrapper = document.getElementById('notifBellWrapper');
+    if (wrapper && !wrapper.contains(e.target)) {
+      const dropdown = document.getElementById('notifDropdown');
+      if (dropdown) dropdown.classList.remove('open');
+    }
+  });
+
+  // Initial fetch on page load + re-poll every 60 seconds
+  document.addEventListener('DOMContentLoaded', function() {
+    fetchExpiryNotifications();
+    setInterval(fetchExpiryNotifications, 60000);
+  });
 </script>
 
 <!-- ============================================================
@@ -349,7 +666,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
   }
 
   function showSessionModal(title, message, redirectUrl) {
-    _sessionPollingActive = false;
+    _sessionPollingActive = false; // Stop further polls once modal is shown
     _sessionModalRedirectUrl = redirectUrl;
     document.getElementById('sessionModalTitle').textContent = title;
     document.getElementById('sessionModalMessage').textContent = message;
@@ -366,9 +683,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
         _sessionPollingActive = false;
 
         if (data.reason === 'no_admin') {
-          window.location.href = data.register_url || '/login_main/register_admin.php';
+          // Admin deleted — redirect to register page immediately
+          window.location.href = data.register_url || '/setup.php';
 
         } else if (data.reason === 'deleted') {
+          // Current user account deleted
           const modal = document.getElementById('sessionModal');
           if (modal) {
             document.getElementById('sessionModalTitle').textContent = 'Account Deleted';
