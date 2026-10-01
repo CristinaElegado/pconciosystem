@@ -1,27 +1,3 @@
-<head>
-    <!-- ... other lines ... -->
-    <link rel="stylesheet" href="transaction_design.css">
-    <style>
-        /* Add this line to remove the background */
-        body {
-            background-image: none !important;
-        }
-
-        /* Existing styles... */
-    </style>
-</head>
-<head>
-    <!-- ... other lines ... -->
-    <link rel="stylesheet" href="transaction_design.css">
-    <style>
-        /* Add this line to remove the background */
-        body {
-            background-image: none !important;
-        }
-
-        /* Existing styles... */
-    </style>
-</head>
 <?php
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';

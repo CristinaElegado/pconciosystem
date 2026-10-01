@@ -762,6 +762,11 @@ nav a:hover {
     font-size:1rem;font-weight:600;cursor:pointer;transition:.2s;
 }
 .btn-leave-review:hover { background:#d63068; transform:translateY(-2px); }
+.review-submitted-msg {
+    display:inline-flex;align-items:center;gap:10px;padding:13px 28px;
+    background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:50px;
+    color:#15803d;font-size:.95rem;font-weight:600;
+}
 .testimonial-card { cursor:pointer; }
 
 /* ── Review Modal ── */
@@ -1669,9 +1674,16 @@ form button:disabled {
         <?php endif; ?>
     </div>
     <div class="testimonials-submit-wrap">
+        <?php if (empty($testimonial_success)): ?>
         <button class="btn-leave-review" onclick="document.getElementById('reviewModal').classList.add('open')">
             <i class="fa-solid fa-star"></i> Leave a Review
         </button>
+        <?php else: ?>
+        <div class="review-submitted-msg">
+            <i class="fa-solid fa-circle-check" style="color:#22c55e;font-size:1.3rem;"></i>
+            <span><?= htmlspecialchars($testimonial_success) ?></span>
+        </div>
+        <?php endif; ?>
     </div>
 </section>
 
@@ -1725,9 +1737,6 @@ function openFullT(d) {
 }
 document.getElementById('reviewModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
 document.getElementById('fullTModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
-<?php if(!empty($testimonial_success)):?>
-document.addEventListener('DOMContentLoaded',function(){document.getElementById('reviewModal').classList.add('open');});
-<?php endif;?>
 // ── JS Star Picker ──
 (function(){
     const picker=document.getElementById('starPicker');

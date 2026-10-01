@@ -130,7 +130,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <a href="../patient_account/patient_account.php" class="<?= $current_page == 'patient_account.php' ? 'active' : '' ?>"><i class="fa-solid fa-id-card"></i> Patient Accounts</a>
         <a href="../staff_account/staff_account.php" class="<?= $current_page == 'staff_account.php' ? 'active' : '' ?>"><i class="fa-solid fa-users"></i> Staff Accounts</a>
       </li>
-      <li class="accordion-item <?= in_array($current_page, ['settings.php','audit_trail.php']) ? 'accordion-open' : '' ?>">
+      <li class="accordion-item <?= in_array($current_page, ['settings.php','audit_trail.php','testimonials_approval.php']) ? 'accordion-open' : '' ?>">
         <div class="accordion-toggle" onclick="toggleAccordion(this)">
           <span><i class="fa-solid fa-gear"></i> Settings</span>
           <i class="fa-solid fa-chevron-up accordion-arrow"></i>
@@ -138,6 +138,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <ul class="accordion-sub">
           <li><a href="../audit_trail/audit_trail.php" class="<?= $current_page == 'audit_trail.php' ? 'active' : '' ?>"><i class="fa-solid fa-clock-rotate-left"></i> Audit Trail</a></li>
           <li><a href="../admin/settings.php" class="<?= $current_page == 'settings.php' ? 'active' : '' ?>"><i class="fa-solid fa-database"></i> Truncate / Restore</a></li>
+          <li><a href="../testimonials_approval.php" class="<?= $current_page == 'testimonials_approval.php' ? 'active' : '' ?>"><i class="fa-solid fa-star"></i> Testimonial Approval</a></li>
         </ul>
       </li>
       <li><a href="../main_page/logout.php" class="logout-link" onclick="event.preventDefault(); showConfirmDialog('Are you sure you want to logout?', function(){ window.location.href='../main_page/logout.php'; }, { title: 'Logout', icon: 'logout', okText: 'Logout' });"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
@@ -210,7 +211,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
     transition: max-height 0.3s ease;
   }
   .accordion-item.accordion-open .accordion-sub {
-    max-height: 200px;
+    max-height: 280px;
   }
   .accordion-sub li a {
     display: flex;
