@@ -219,49 +219,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'], $_POST['action'
 
         $stmt->execute([$id]);
 
-        // --- PHPMailer Execution ---
-        if (!empty($emailSubject) && !empty($emailBody)) {
-            $mail = new PHPMailer(true);
-            $mail->isSMTP();
-            $mail->Host       = getenv('SMTP_HOST') ?: 'smtp.gmail.com';
-            $mail->SMTPAuth   = true;
-            $mail->Username   = getenv('SMTP_USER') ?: 'beanchcanonego1212@gmail.com';
-            $mail->Password   = 'xksi pzdv avxp clby'; // Inject securely via server environment
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port       = 587;
+        $pdo->commit();
 
-            $mail->setFrom($mail->Username, 'Mariategue Ortho-Dental Clinic');
-            $mail->addAddress($email);
-            $mail->isHTML(true);
-            $mail->Subject = $emailSubject;
-            $mail->Body    = $emailBody;
-            $mail->send();
+        // --- PHPMailer Execution ---
+        // Wrapped in its own try-catch: email failure must NEVER cancel a
+        // successfully-committed DB action (Cancel / Approve / Restore / Refund).
+        if (!empty($emailSubject) && !empty($emailBody)) {
+            try {
+                $mail = new PHPMailer(true);
+                $mail->isSMTP();
+                $mail->Host       = getenv('SMTP_HOST') ?: 'smtp.gmail.com';
+                $mail->SMTPAuth   = true;
+                $mail->Username   = getenv('SMTP_USER') ?: 'beanchcanonego1212@gmail.com';
+                $mail->Password   = 'xksi pzdv avxp clby';
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port       = 587;
+                // Fail fast: 10-second connect + command timeout
+                $mail->Timeout    = 10;
+                $mail->SMTPOptions = [
+                    'ssl' => [
+                        'verify_peer'       => false,
+                        'verify_peer_name'  => false,
+                        'allow_self_signed' => true
+                    ]
+                ];
+
+                $mail->setFrom($mail->Username, 'Mariategue Ortho-Dental Clinic');
+                $mail->addAddress($email);
+                $mail->isHTML(true);
+                $mail->Subject = $emailSubject;
+                $mail->Body    = $emailBody;
+                $mail->send();
+            } catch (\Exception $mailEx) {
+                // Log the failure but do NOT surface it to the user.
+                error_log('Appointment email failed (action=' . $action . ', id=' . $id . '): ' . $mailEx->getMessage());
+            }
         }
 
         // --- Textbee.dev API (SMS Execution) ---
+        // Also wrapped: SMS failure must NOT revert the already-committed action.
         if (!empty($smsMessage) && !empty($phoneNumber)) {
-            $textbeeApiKey = getenv('txb_dOnYlM9EF7f8RqwdTHpshiL4JXRdm6A2') ?: 'txb_dOnYlM9EF7f8RqwdTHpshiL4JXRdm6A2';
-            $textbeeDeviceId = getenv('6a9de725ccb6c7270925a793') ?: '6a9de725ccb6c7270925a793';
+            try {
+                $textbeeApiKey   = 'txb_dOnYlM9EF7f8RqwdTHpshiL4JXRdm6A2';
+                $textbeeDeviceId = '6a9de725ccb6c7270925a793';
 
-            $payload = array(
-                'recipients' => array($phoneNumber),
-                'message'    => $smsMessage
-            );
+                $payload = json_encode([
+                    'recipients' => [$phoneNumber],
+                    'message'    => $smsMessage
+                ]);
 
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, "https://api.textbee.dev/api/v1/gateway/devices/{$textbeeDeviceId}/send-sms");
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                'x-api-key: ' . $textbeeApiKey,
-                'Content-Type: application/json'
-            ));
-            $output = curl_exec($ch);
-            curl_close($ch);
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, "https://api.textbee.dev/api/v1/gateway/devices/{$textbeeDeviceId}/send-sms");
+                curl_setopt($ch, CURLOPT_POST, 1);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'x-api-key: ' . $textbeeApiKey,
+                    'Content-Type: application/json'
+                ]);
+                curl_exec($ch);
+                curl_close($ch);
+            } catch (\Exception $smsEx) {
+                error_log('SMS failed (action=' . $action . ', id=' . $id . '): ' . $smsEx->getMessage());
+            }
         }
-
-        $pdo->commit();
 
         // ── Audit log ──
         $actor      = $_SESSION['username'] ?? 'Unknown';

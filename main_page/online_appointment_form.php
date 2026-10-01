@@ -583,7 +583,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_appointment'])) 
                 <div class="xray-upload-box">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
                     <span>Mag-upload ng X-Ray o Larawan ng Ngipin</span>
-                    <input type="file" name="dental_toothxray" id="dental_toothxray" accept="image/*">
+                    <input type="file" name="dental_toothxray" id="dental_toothxray" accept="image/*" onchange="showFilePreview(this, 'xrayPreview')">
+                </div>
+                <div id="xrayPreview" style="display:none; margin-top:8px; padding:8px 12px; background:#f0fdf4; border:1px solid #86efac; border-radius:6px; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <i class="fa-solid fa-circle-check" style="color:#16a34a; font-size:1.1rem;"></i>
+                    <span id="xrayFileName" style="font-size:0.875rem; color:#166534; font-weight:500;"></span>
+                    <img id="xrayImgPreview" src="" alt="X-Ray Preview" style="max-height:80px; max-width:120px; border-radius:4px; border:1px solid #bbf7d0; display:none;">
                 </div>
             </div>
 
@@ -660,7 +665,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['book_appointment'])) 
                     <div class="xray-upload-box" style="padding: 15px; border: 2px dashed #fda4af; background: #fff; text-align: center; border-radius: 6px;">
                         <i class="fa-solid fa-id-card" style="font-size: 1.5rem; color: #db2777; margin-bottom: 5px;"></i>
                         <span style="display: block; font-size: 0.9rem; color: #4b5563;">Mag-upload ng larawan ng HMO ID o Card (Front/Back)</span>
-                        <input type="file" name="hmo_id_image" id="hmoIdImage" accept="image/*,application/pdf" style="margin-top: 5px;">
+                        <input type="file" name="hmo_id_image" id="hmoIdImage" accept="image/*,application/pdf" style="margin-top: 5px;" onchange="showFilePreview(this, 'hmoPreview')">
+                    </div>
+                    <div id="hmoPreview" style="display:none; margin-top:8px; padding:8px 12px; background:#fdf2f8; border:1px solid #f9a8d4; border-radius:6px; align-items:center; gap:10px; flex-wrap:wrap;">
+                        <i class="fa-solid fa-circle-check" style="color:#db2777; font-size:1.1rem;"></i>
+                        <span id="hmoFileName" style="font-size:0.875rem; color:#831843; font-weight:500;"></span>
+                        <img id="hmoImgPreview" src="" alt="HMO ID Preview" style="max-height:80px; max-width:120px; border-radius:4px; border:1px solid #fbcfe8; display:none;">
                     </div>
                 </div>
             </div>
@@ -686,6 +696,39 @@ function toggleMobileMenu() {
     const overlay = document.querySelector('.nav-overlay');
     nav.classList.toggle('active');
     overlay.classList.toggle('active');
+}
+
+/**
+ * Show filename + image preview after a file is selected.
+ * previewContainerId — the div to show/hide
+ */
+function showFilePreview(input, previewContainerId) {
+    const container = document.getElementById(previewContainerId);
+    const fileNameEl = container.querySelector('[id$="FileName"]');
+    const imgEl      = container.querySelector('[id$="ImgPreview"]');
+
+    if (!input.files || input.files.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+
+    const file = input.files[0];
+    fileNameEl.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+    container.style.display = 'flex';
+
+    // Show image thumbnail if it's an image file
+    if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            imgEl.src = e.target.result;
+            imgEl.style.display = 'inline-block';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        // PDF or other — hide the img thumbnail
+        imgEl.style.display = 'none';
+        imgEl.src = '';
+    }
 }
 
 let selectedServices = [];
