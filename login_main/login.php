@@ -8,6 +8,19 @@ header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 header('Expires: 0');
 
+// ── Already logged in? Restore from cookie if needed, then redirect away ──────
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    if (!isset($_SESSION['id']) || !isset($_SESSION['user_type'])) {
+        include_once __DIR__ . '/../miscellaneous/session_restore.php';
+    }
+    if (isset($_SESSION['id'], $_SESSION['user_type'])) {
+        // User is already authenticated — no need to see the login page
+        header("Location: /patient_list/patient_list.php");
+        exit;
+    }
+}
+// ───────────────────────────────────────────────────────────────────────────────
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $Email = trim($_POST['email']);
     $password = trim($_POST['password']);

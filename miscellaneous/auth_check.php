@@ -11,7 +11,7 @@
 
 if (!isset($_SESSION['id']) || !isset($_SESSION['username']) || !isset($_SESSION['user_type'])) {
     // Try to restore from cookie token before giving up
-    include __DIR__ . '/session_restore.php';
+    include_once __DIR__ . '/session_restore.php';
 }
 
 if (!isset($_SESSION['id']) || !isset($_SESSION['username']) || !isset($_SESSION['user_type'])) {
