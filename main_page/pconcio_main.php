@@ -4,6 +4,7 @@
 ob_start();
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
+include __DIR__ . '/../miscellaneous/session_restore.php';
 
 // Helper: always clean buffers and send JSON then exit
 function send_json(array $payload) {

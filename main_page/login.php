@@ -56,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_name'] = $admin['username'];
             $_SESSION['profile_photo'] = $admin['profile_photo'] ?? null;
             $_SESSION['session_token'] = $token;
+            setcookie('__st', $token, ['expires'=>time()+28800,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
             // session_regenerate_id(true); 
 
             echo json_encode(['success' => true, 'redirect' => '../dashboard/dashboard.php']);
@@ -90,6 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_email'] = $dentist['email'];
             $_SESSION['profile_photo'] = $dentist['profile_photo'] ?? null;
             $_SESSION['session_token'] = $token;
+            setcookie('__st', $token, ['expires'=>time()+28800,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
 
             echo json_encode(['success' => true, 'redirect' => '../patient_list/patient_list.php']);
             exit;
@@ -124,6 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['staff_id'] = $staff['staff_id'];
             $_SESSION['profile_photo'] = $staff['profile_photo'] ?? null;
             $_SESSION['session_token'] = $token;
+            setcookie('__st', $token, ['expires'=>time()+28800,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
 
             echo json_encode(['success' => true, 'redirect' => '../patient_list/patient_list.php']);
             exit;
@@ -161,6 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['gender']      = $user['gender'];
             $_SESSION['profile_photo'] = $user['profile_photo'] ?? null;
             $_SESSION['session_token'] = $token;
+            setcookie('__st', $token, ['expires'=>time()+28800,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
 
             echo json_encode(['success' => true, 'redirect' => 'pconcio_main.php']);
             exit;

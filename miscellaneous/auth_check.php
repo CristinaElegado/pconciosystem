@@ -10,6 +10,11 @@
  */
 
 if (!isset($_SESSION['id']) || !isset($_SESSION['username']) || !isset($_SESSION['user_type'])) {
+    // Try to restore from cookie token before giving up
+    include __DIR__ . '/session_restore.php';
+}
+
+if (!isset($_SESSION['id']) || !isset($_SESSION['username']) || !isset($_SESSION['user_type'])) {
     session_unset();
     session_destroy();
     header("Location: /login_main/login.php");

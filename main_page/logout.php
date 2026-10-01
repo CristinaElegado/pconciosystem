@@ -27,6 +27,9 @@ $_SESSION = [];
 // Destroy the session
 session_destroy();
 
+// Clear the persistent session token cookie
+setcookie('__st', '', ['expires'=>time()-3600,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
+
 // Prevent browser from caching protected pages
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");

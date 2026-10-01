@@ -37,6 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['username'] = $admin['username'];
             $_SESSION['user_type'] = "admin";
             $_SESSION['session_token'] = $token;
+            setcookie('__st', $token, ['expires'=>time()+28800,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
 
             log_audit($pdo, 'admin', $admin['username'], 'Logged In', 'Admin successfully logged in.');
 
@@ -71,6 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['username'] = $dentist['first_name'];
             $_SESSION['user_type'] = "dentist";
             $_SESSION['session_token'] = $token;
+            setcookie('__st', $token, ['expires'=>time()+28800,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
 
             log_audit($pdo, 'dentist', $dentist['first_name'] . ' ' . $dentist['last_name'], 'Logged In', 'Dentist successfully logged in.');
 
@@ -106,6 +108,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['staff_id'] = $staff['staff_id'];
             $_SESSION['user_type'] = "staff";
             $_SESSION['session_token'] = $token;
+            setcookie('__st', $token, ['expires'=>time()+28800,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
 
             log_audit($pdo, 'staff', $staff['first_name'] . ' ' . $staff['last_name'], 'Logged In', 'Staff successfully logged in.');
 

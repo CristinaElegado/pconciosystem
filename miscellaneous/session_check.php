@@ -17,14 +17,22 @@
 session_start();
 header('Content-Type: application/json');
 
-// Walang session
+// Walang session — try to restore from cookie first
+if (!isset($_SESSION['id']) || !isset($_SESSION['user_type'])) {
+    // Need DB for restore — include early
+    if (file_exists(__DIR__ . '/database.php')) {
+        include_once __DIR__ . '/database.php';
+        include_once __DIR__ . '/session_restore.php';
+    }
+}
+
+// Still no session after restore attempt
 if (!isset($_SESSION['id']) || !isset($_SESSION['user_type'])) {
     echo json_encode(['valid' => false, 'reason' => 'no_session']);
     exit;
 }
 
 // ── Force-kick old sessions that predate the session_token feature ────────────
-// If no token in session, it's a stale pre-deploy session — log them out
 if (!isset($_SESSION['session_token'])) {
     session_unset();
     session_destroy();
