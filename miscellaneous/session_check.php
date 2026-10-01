@@ -1,16 +1,17 @@
 <?php
 /**
  * session_check.php
- * 
+ *
  * Polling endpoint. Tinatawagan ng browser bawat ilang segundo para i-verify
  * kung valid pa ba ang session at kung nag-eexist pa ba ang user sa DB.
- * 
+ *
  * Returns JSON:
- *   { "valid": true }                         — session OK
- *   { "valid": false, "reason": "deleted" }   — user na-delete sa DB
- *   { "valid": false, "reason": "no_session"} — walang session
+ *   { "valid": true }                          — session OK
+ *   { "valid": false, "reason": "kicked" }     — logged in sa ibang device
+ *   { "valid": false, "reason": "deleted" }    — user na-delete sa DB
+ *   { "valid": false, "reason": "no_session" } — walang session
  *   { "valid": false, "reason": "no_admin",
- *     "register_url": "..." }                 — admin na-delete, walang ibang admin
+ *     "register_url": "..." }                  — admin na-delete, walang ibang admin
  */
 
 session_start();
@@ -24,59 +25,76 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['user_type'])) {
 
 include __DIR__ . '/database.php';
 
-$userId   = $_SESSION['id'];
-$userType = $_SESSION['user_type'];
-$exists   = false;
+$userId    = $_SESSION['id'];
+$userType  = $_SESSION['user_type'];
+$myToken   = $_SESSION['session_token'] ?? null;
+$exists    = false;
+$dbToken   = null;
 
 try {
     if ($userType === 'admin') {
-        $stmt = $pdo->prepare("SELECT id FROM admin WHERE id = :id LIMIT 1");
+        $stmt = $pdo->prepare("SELECT id, session_token FROM admin WHERE id = :id LIMIT 1");
         $stmt->execute(['id' => $userId]);
-        $exists = (bool) $stmt->fetch();
+        $row = $stmt->fetch();
 
-        // Kung na-delete yung admin, check kung may ibang admin pa sa table
-        if (!$exists) {
-            $countStmt = $pdo->query("SELECT COUNT(*) FROM admin");
-            $adminCount = (int) $countStmt->fetchColumn();
-
-            // Destroy the session so the user is fully logged out
+        if (!$row) {
+            // Admin account deleted — check if any admin left
+            $adminCount = (int) $pdo->query("SELECT COUNT(*) FROM admin")->fetchColumn();
             session_unset();
             session_destroy();
 
             if ($adminCount === 0) {
-                // Walang admin — redirect sa registration
-                echo json_encode([
-                    'valid'        => false,
-                    'reason'       => 'no_admin',
-                    'register_url' => '/setup.php'
-                ]);
+                echo json_encode(['valid' => false, 'reason' => 'no_admin', 'register_url' => '/setup.php']);
             } else {
-                // May ibang admin — redirect sa login lang
                 echo json_encode(['valid' => false, 'reason' => 'deleted']);
             }
             exit;
         }
 
+        $exists  = true;
+        $dbToken = $row['session_token'];
+
     } elseif ($userType === 'dentist') {
-        $stmt = $pdo->prepare("SELECT id FROM dentist_accounts WHERE id = :id AND is_active = 1 AND is_deleted = 0 LIMIT 1");
+        $stmt = $pdo->prepare("SELECT id, session_token FROM dentist_accounts WHERE id = :id AND is_active = 1 AND is_deleted = 0 LIMIT 1");
         $stmt->execute(['id' => $userId]);
-        $exists = (bool) $stmt->fetch();
+        $row     = $stmt->fetch();
+        $exists  = (bool) $row;
+        $dbToken = $row['session_token'] ?? null;
 
     } elseif ($userType === 'staff') {
-        $stmt = $pdo->prepare("SELECT id FROM staff_accounts WHERE id = :id AND is_active = 1 AND is_deleted = 0 LIMIT 1");
+        $stmt = $pdo->prepare("SELECT id, session_token FROM staff_accounts WHERE id = :id AND is_active = 1 AND is_deleted = 0 LIMIT 1");
         $stmt->execute(['id' => $userId]);
-        $exists = (bool) $stmt->fetch();
+        $row     = $stmt->fetch();
+        $exists  = (bool) $row;
+        $dbToken = $row['session_token'] ?? null;
+
+    } elseif ($userType === 'patient') {
+        $stmt = $pdo->prepare("SELECT id, session_token FROM patient_account WHERE id = :id AND is_deleted = 0 LIMIT 1");
+        $stmt->execute(['id' => $userId]);
+        $row     = $stmt->fetch();
+        $exists  = (bool) $row;
+        $dbToken = $row['session_token'] ?? null;
     }
+
 } catch (PDOException $e) {
-    // Sa case ng DB error, i-treat bilang invalid para safe
     echo json_encode(['valid' => false, 'reason' => 'error']);
     exit;
 }
 
+// Account no longer exists
 if (!$exists) {
     session_unset();
     session_destroy();
     echo json_encode(['valid' => false, 'reason' => 'deleted']);
+    exit;
+}
+
+// ── Single-session check ──────────────────────────────────────────────────────
+// If a session_token exists in DB but doesn't match ours, someone else logged in
+if ($myToken !== null && $dbToken !== null && !hash_equals($dbToken, $myToken)) {
+    session_unset();
+    session_destroy();
+    echo json_encode(['valid' => false, 'reason' => 'kicked']);
     exit;
 }
 

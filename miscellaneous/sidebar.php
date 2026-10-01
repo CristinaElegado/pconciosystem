@@ -699,6 +699,18 @@ $current_page = basename($_SERVER['PHP_SELF']);
             window.location.href = '/login_main/login.php';
           }
 
+        } else if (data.reason === 'kicked') {
+          // Logged in from another device
+          const modal = document.getElementById('sessionModal');
+          if (modal) {
+            document.getElementById('sessionModalTitle').textContent = 'Logged In Elsewhere';
+            document.getElementById('sessionModalMessage').textContent = 'Your account was logged in from another device or browser. You have been signed out of this session.';
+            _sessionModalRedirectUrl = '/login_main/login.php';
+            modal.classList.add('show');
+          } else {
+            window.location.href = '/login_main/login.php';
+          }
+
         } else if (data.reason === 'no_session') {
           window.location.href = '/login_main/login.php';
         }
@@ -710,6 +722,22 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
   // Poll every 5 seconds
   setInterval(pollSession, 5000);
+
+  // ── Auto-logout on browser close / tab close / PC shutdown ──────────────────
+  // sendBeacon is fire-and-forget, works even when the page is unloading
+  function sendClearBeacon() {
+    navigator.sendBeacon('/miscellaneous/session_token_clear.php');
+  }
+
+  // Tab/window closed or navigating away
+  window.addEventListener('beforeunload', sendClearBeacon);
+
+  // Mobile / device sleep / screen off → tab goes hidden
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') {
+      sendClearBeacon();
+    }
+  });
 </script>
 
 </body>

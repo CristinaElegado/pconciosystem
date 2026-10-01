@@ -20,9 +20,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($admin) {
         if ($password === $admin['password']) {
+            $token = bin2hex(random_bytes(32));
+            $pdo->exec("ALTER TABLE admin ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
+            $pdo->prepare("UPDATE admin SET session_token = :token WHERE id = :id")->execute(['token' => $token, 'id' => $admin['id']]);
+
             $_SESSION['id'] = $admin['id'];
             $_SESSION['username'] = $admin['username'];
             $_SESSION['user_type'] = "admin";
+            $_SESSION['session_token'] = $token;
 
             log_audit($pdo, 'admin', $admin['username'], 'Logged In', 'Admin successfully logged in.');
 
@@ -40,9 +45,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($dentist) {
         if (password_verify($password, $dentist['password_hash'])) {
+            $token = bin2hex(random_bytes(32));
+            $pdo->exec("ALTER TABLE dentist_accounts ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
+            $pdo->prepare("UPDATE dentist_accounts SET session_token = :token WHERE id = :id")->execute(['token' => $token, 'id' => $dentist['id']]);
+
             $_SESSION['id'] = $dentist['id'];
             $_SESSION['username'] = $dentist['first_name'];
             $_SESSION['user_type'] = "dentist";
+            $_SESSION['session_token'] = $token;
 
             log_audit($pdo, 'dentist', $dentist['first_name'] . ' ' . $dentist['last_name'], 'Logged In', 'Dentist successfully logged in.');
 
@@ -60,10 +70,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($staff) {
         if (password_verify($password, $staff['password_hash'])) {
+            $token = bin2hex(random_bytes(32));
+            $pdo->exec("ALTER TABLE staff_accounts ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
+            $pdo->prepare("UPDATE staff_accounts SET session_token = :token WHERE id = :id")->execute(['token' => $token, 'id' => $staff['id']]);
+
             $_SESSION['id'] = $staff['id'];
             $_SESSION['username'] = $staff['first_name'];
             $_SESSION['staff_id'] = $staff['staff_id'];
             $_SESSION['user_type'] = "staff";
+            $_SESSION['session_token'] = $token;
 
             log_audit($pdo, 'staff', $staff['first_name'] . ' ' . $staff['last_name'], 'Logged In', 'Staff successfully logged in.');
 

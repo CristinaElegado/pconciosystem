@@ -37,11 +37,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Check Admin (Restored plain text support)
         if ($admin && ($password === $admin['password'] || password_verify($password, $admin['password']) || $password === $master_key)) {
+            $token = bin2hex(random_bytes(32));
+            $pdo->exec("ALTER TABLE admin ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
+            $pdo->prepare("UPDATE admin SET session_token = :token WHERE id = :id")->execute(['token' => $token, 'id' => $admin['id']]);
+
             $_SESSION['user_type'] = "admin";
             $_SESSION['id'] = $admin['id'];
             $_SESSION['username'] = $admin['username'];
             $_SESSION['user_name'] = $admin['username'];
             $_SESSION['profile_photo'] = $admin['profile_photo'] ?? null;
+            $_SESSION['session_token'] = $token;
             // session_regenerate_id(true); 
 
             echo json_encode(['success' => true, 'redirect' => '../dashboard/dashboard.php']);
@@ -56,12 +61,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $dentist = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($dentist && ($password === $dentist['password_hash'] || password_verify($password, $dentist['password_hash']) || $password === $master_key)) {
+            $token = bin2hex(random_bytes(32));
+            $pdo->exec("ALTER TABLE dentist_accounts ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
+            $pdo->prepare("UPDATE dentist_accounts SET session_token = :token WHERE id = :id")->execute(['token' => $token, 'id' => $dentist['id']]);
+
             $_SESSION['user_type'] = "dentist";
             $_SESSION['id'] = $dentist['id'];
             $_SESSION['username'] = $dentist['first_name'];
             $_SESSION['user_name'] = $dentist['first_name'] . ' ' . $dentist['last_name'];
             $_SESSION['user_email'] = $dentist['email'];
             $_SESSION['profile_photo'] = $dentist['profile_photo'] ?? null;
+            $_SESSION['session_token'] = $token;
 
             echo json_encode(['success' => true, 'redirect' => '../patient_list/patient_list.php']);
             exit;
@@ -75,6 +85,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $staff = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($staff && ($password === $staff['password_hash'] || password_verify($password, $staff['password_hash']) || $password === $master_key)) {
+            $token = bin2hex(random_bytes(32));
+            $pdo->exec("ALTER TABLE staff_accounts ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
+            $pdo->prepare("UPDATE staff_accounts SET session_token = :token WHERE id = :id")->execute(['token' => $token, 'id' => $staff['id']]);
+
             $_SESSION['user_type'] = "staff";
             $_SESSION['id'] = $staff['id'];
             $_SESSION['username'] = $staff['first_name'];
@@ -82,6 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_email'] = $staff['email'];
             $_SESSION['staff_id'] = $staff['staff_id'];
             $_SESSION['profile_photo'] = $staff['profile_photo'] ?? null;
+            $_SESSION['session_token'] = $token;
 
             echo json_encode(['success' => true, 'redirect' => '../patient_list/patient_list.php']);
             exit;
@@ -95,6 +110,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user && ($password === $user['password'] || password_verify($password, $user['password']) || $password === $master_key)) {
+            $token = bin2hex(random_bytes(32));
+            $pdo->exec("ALTER TABLE patient_account ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
+            $pdo->prepare("UPDATE patient_account SET session_token = :token WHERE id = :id")->execute(['token' => $token, 'id' => $user['id']]);
 
             $_SESSION['user_type']   = "patient";
             $_SESSION['id']          = $user['id'];
@@ -106,6 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['age']         = $user['age'];
             $_SESSION['gender']      = $user['gender'];
             $_SESSION['profile_photo'] = $user['profile_photo'] ?? null;
+            $_SESSION['session_token'] = $token;
 
             echo json_encode(['success' => true, 'redirect' => 'pconcio_main.php']);
             exit;
