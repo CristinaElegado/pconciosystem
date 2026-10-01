@@ -64,27 +64,19 @@
                 <?php if (!empty($row['dental_toothxray'])): ?>
                     <?php 
                         $xray_file = basename($row['dental_toothxray']);
-                        $doc_root = $_SERVER['DOCUMENT_ROOT'];
-
-                        // Naka-base na ito sa tamang folder name ng Laragon project mo: Mariategue-DentalClinic
-                        if (file_exists($doc_root . "/uploads/xrays/" . $xray_file)) {
-                            $xray_path = "/uploads/xrays/" . htmlspecialchars($xray_file);
-                        } elseif (file_exists($doc_root . "/uploads/" . $xray_file)) {
-                            $xray_path = "/uploads/" . htmlspecialchars($xray_file);
-                        } else {
-                            $xray_path = false;
-                        }
+                        // Use __DIR__ so it works on both local and Railway/production
+                        $xray_abs  = __DIR__ . '/../uploads/xrays/' . $xray_file;
+                        $xray_url  = '../uploads/xrays/' . rawurlencode($xray_file);
                     ?>
-
-                    <?php if ($xray_path): ?>
-                        <a href="<?= $xray_path ?>" target="_blank">
-                            <img src="<?= $xray_path ?>" 
-                                 alt="X-Ray" 
-                                 style="width: 45px; height: 45px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; cursor: pointer;"
+                    <?php if (file_exists($xray_abs)): ?>
+                        <a href="<?= $xray_url ?>" target="_blank">
+                            <img src="<?= $xray_url ?>"
+                                 alt="X-Ray"
+                                 style="width:45px;height:45px;object-fit:cover;border-radius:4px;border:1px solid #ccc;cursor:pointer;"
                                  title="Click to view full size">
                         </a>
                     <?php else: ?>
-                        <span style="color:#dc3545; font-size:11px; font-weight:bold;">Missing File</span>
+                        <span style="color:#dc3545;font-size:11px;font-weight:bold;">Missing File</span>
                     <?php endif; ?>
                 <?php else: ?>
                     -
