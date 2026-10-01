@@ -163,10 +163,10 @@ $approved = $pdo->query("SELECT * FROM testimonials WHERE is_approved = 1 ORDER 
                         <input type="hidden" name="action" value="reject">
                         <input type="hidden" name="id" value="<?= $r['id'] ?>">
                         <button type="button" class="btn-reject"
-                            onclick="showConfirmDialog('Reject and delete this review from <?= htmlspecialchars(addslashes($r['patient_name'])) ?>?', function(){ document.querySelectorAll('.reject-form-<?= $r['id'] ?>')[0].submit(); }, { title: 'Reject Review', icon: 'danger', okText: 'Yes, Reject' })">
+                            onclick="showConfirmDialog('Reject and delete this review from <?= htmlspecialchars(addslashes($r['patient_name'])) ?>?', function(){ document.getElementById('reject-form-<?= $r['id'] ?>').submit(); }, { title: 'Reject Review', icon: 'danger', okText: 'Yes, Reject' })">
                             <i class="fa-solid fa-xmark"></i> Reject
                         </button>
-                        <input type="submit" class="reject-form-<?= $r['id'] ?>" style="display:none">
+                        <input type="submit" id="reject-form-<?= $r['id'] ?>" style="display:none">
                     </form>
                 </div>
             </div>
@@ -196,10 +196,10 @@ $approved = $pdo->query("SELECT * FROM testimonials WHERE is_approved = 1 ORDER 
                         <input type="hidden" name="action" value="reject">
                         <input type="hidden" name="id" value="<?= $r['id'] ?>">
                         <button type="button" class="btn-delete"
-                            onclick="showConfirmDialog('Remove this approved review from <?= htmlspecialchars(addslashes($r['patient_name'])) ?>? It will no longer show on the main page.', function(){ document.querySelectorAll('.reject-form-<?= $r['id'] ?>')[0].submit(); }, { title: 'Remove Review', icon: 'warning', okText: 'Yes, Remove' })">
+                            onclick="showConfirmDialog('Remove this approved review from <?= htmlspecialchars(addslashes($r['patient_name'])) ?>? It will no longer show on the main page.', function(){ document.getElementById('reject-form-<?= $r['id'] ?>').submit(); }, { title: 'Remove Review', icon: 'warning', okText: 'Yes, Remove' })">
                             <i class="fa-solid fa-trash"></i> Remove
                         </button>
-                        <input type="submit" class="reject-form-<?= $r['id'] ?>" style="display:none">
+                        <input type="submit" id="reject-form-<?= $r['id'] ?>" style="display:none">
                     </form>
                 </div>
             </div>

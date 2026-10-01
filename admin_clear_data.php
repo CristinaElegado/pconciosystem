@@ -20,8 +20,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->exec("TRUNCATE TABLE patient_services;");
             $pdo->exec("TRUNCATE TABLE online_appointment;");
             $pdo->exec("TRUNCATE TABLE online_appointment_services;");
+            $pdo->exec("TRUNCATE TABLE testimonials;");
             
-            $message = "Transactions and Appointments have been successfully cleared!";
+            $message = "Transactions, Appointments, and Testimonials have been successfully cleared!";
             $msgClass = "success";
         } 
         elseif (isset($_POST['clear_all'])) {
@@ -41,7 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'service_items',
                 'item_inventory',
                 'password_change_requests',
-                'time_slots'
+                'time_slots',
+                'testimonials'
             ];
 
             foreach ($tables_to_truncate as $table) {
