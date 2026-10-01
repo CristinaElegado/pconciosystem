@@ -4,7 +4,6 @@
 ob_start();
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
-include __DIR__ . '/../miscellaneous/session_restore.php';
 
 // Helper: always clean buffers and send JSON then exit
 function send_json(array $payload) {
@@ -154,43 +153,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['p
 }
 
 // If not POST login, continue to render the page (GET)
-
-// ── Handle testimonial submission ─────────────────────────────────────────────
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['testimonial_submit'])) {
-    $name    = trim(strip_tags($_POST['patient_name'] ?? ''));
-    $rating  = max(1, min(5, (int)($_POST['rating'] ?? 0)));
-    $comment = trim(strip_tags($_POST['comment'] ?? ''));
-    if ($name !== '' && $comment !== '' && $rating >= 1) {
-        try {
-            $pdo->exec("CREATE TABLE IF NOT EXISTS `testimonials` (
-                `id` int NOT NULL AUTO_INCREMENT, `patient_name` varchar(100) NOT NULL,
-                `rating` tinyint NOT NULL DEFAULT 5, `comment` text NOT NULL,
-                `is_approved` tinyint NOT NULL DEFAULT 0,
-                `submitted_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-            $pdo->prepare("INSERT INTO testimonials (patient_name,rating,comment,is_approved) VALUES(:n,:r,:c,0)")
-                ->execute(['n'=>$name,'r'=>$rating,'c'=>$comment]);
-            $testimonial_success = "Thank you for your feedback! Your review will be visible after approval.";
-        } catch (PDOException $e) {
-            $testimonial_error = "Could not submit review. Please try again.";
-        }
-    } else {
-        $testimonial_error = "Please fill in your name, select a star rating, and write a comment.";
-    }
-}
-
-// ── Fetch approved testimonials ───────────────────────────────────────────────
-$testimonials = [];
-try {
-    $pdo->exec("CREATE TABLE IF NOT EXISTS `testimonials` (
-        `id` int NOT NULL AUTO_INCREMENT, `patient_name` varchar(100) NOT NULL,
-        `rating` tinyint NOT NULL DEFAULT 5, `comment` text NOT NULL,
-        `is_approved` tinyint NOT NULL DEFAULT 0,
-        `submitted_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-    $testimonials = $pdo->query("SELECT * FROM testimonials WHERE is_approved=1 ORDER BY submitted_at DESC")->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) { $testimonials = []; }
-
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
@@ -754,70 +716,6 @@ nav a:hover {
     font-weight: 600;
     color: var(--primary-pink);
 }
-
-/* ── Testimonial submit button ── */
-.testimonials-submit-wrap { text-align:center; margin-top:2.5rem; }
-.btn-leave-review {
-    display:inline-flex;align-items:center;gap:8px;padding:13px 30px;
-    background:var(--primary-pink);color:#fff;border:none;border-radius:50px;
-    font-size:1rem;font-weight:600;cursor:pointer;transition:.2s;
-}
-.btn-leave-review:hover { background:#d63068; transform:translateY(-2px); }
-.review-submitted-msg {
-    display:inline-flex;align-items:center;gap:10px;padding:13px 28px;
-    background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:50px;
-    color:#15803d;font-size:.95rem;font-weight:600;
-}
-.testimonial-card { cursor:pointer; }
-
-/* ── Review Modal ── */
-.t-modal-overlay {
-    display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
-    z-index:9999;justify-content:center;align-items:center;
-}
-.t-modal-overlay.open { display:flex; }
-.t-modal {
-    background:#fff;border-radius:16px;padding:36px 32px;max-width:480px;
-    width:90%;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:fadeUpT .25s ease;
-}
-@keyframes fadeUpT { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-.t-modal h3 { font-size:1.3rem;color:#1e293b;margin-bottom:20px; }
-.t-modal label { font-size:.875rem;font-weight:600;color:#475569;display:block;margin-bottom:6px; }
-.t-modal input[type=text],.t-modal textarea {
-    width:100%;padding:11px 14px;border:1px solid #e2e8f0;border-radius:8px;
-    font-family:'Poppins',sans-serif;font-size:.9rem;margin-bottom:16px;resize:vertical;
-}
-.t-modal input[type=text]:focus,.t-modal textarea:focus { outline:none;border-color:var(--primary-pink); }
-.star-picker { display:flex;gap:4px;margin-bottom:16px; }
-.star-picker label { font-size:2rem;color:#d1d5db;cursor:pointer;transition:color .1s,transform .1s;user-select:none; }
-.star-picker label.hovered,.star-picker label.selected { color:#fcd34d;transform:scale(1.15); }
-.t-modal .modal-actions { display:flex;gap:12px;justify-content:flex-end;margin-top:4px; }
-.btn-submit-review {
-    padding:10px 24px;background:var(--primary-pink);color:#fff;
-    border:none;border-radius:8px;font-weight:600;cursor:pointer;transition:.2s;
-}
-.btn-submit-review:hover { background:#d63068; }
-.btn-cancel-review {
-    padding:10px 20px;background:#f1f5f9;color:#475569;
-    border:none;border-radius:8px;font-weight:600;cursor:pointer;
-}
-.alert-success-review { background:#dcfce7;color:#16a34a;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:.875rem; }
-.alert-error-review   { background:#fee2e2;color:#dc2626;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:.875rem; }
-
-/* ── Full testimonial modal ── */
-.t-full-overlay {
-    display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
-    z-index:9999;justify-content:center;align-items:center;
-}
-.t-full-overlay.open { display:flex; }
-.t-full-modal {
-    background:#fff;border-radius:16px;padding:36px 32px;max-width:500px;
-    width:90%;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:fadeUpT .25s ease;position:relative;
-}
-.t-full-modal .close-btn { position:absolute;top:14px;right:18px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#94a3b8; }
-.t-full-modal .full-stars { color:#fcd34d;font-size:1.6rem;margin-bottom:14px; }
-.t-full-modal .full-quote { font-style:italic;color:#334155;line-height:1.7;margin-bottom:16px;font-size:1rem; }
-.t-full-modal .full-author { font-weight:700;color:var(--primary-pink); }
 
 /* ========================================
    FAQ SECTION
@@ -1601,7 +1499,7 @@ form button:disabled {
                         <span class="user-email"><?= htmlspecialchars($_SESSION['user_email']) ?></span>
                     </div>
                     <a href="../account_setting/index.php" class="dropdown-item">Account Settings</a>
-                    <a href="logout.php" class="dropdown-item logout-item" id="pconcioDropdownLogout" onclick="event.preventDefault(); showConfirmDialog('Are you sure you want to logout?', function(){ window.location.href='logout.php'; }, { title: 'Logout', icon: 'logout', okText: 'Logout' });">Logout</a>
+                    <a href="logout.php" class="dropdown-item logout-item" id="pconcioDropdownLogout" onclick="event.preventDefault(); showConfirmDialog('Are you sure you want to logout?', function(){ window.location.href='logout.php'; }, { title: 'Logout', icon: '🚪', okText: 'Logout' });">Logout</a>
                 </div>
             </div>
         <?php else: ?>
@@ -1661,98 +1559,23 @@ form button:disabled {
 <section id="testimonials" class="testimonials-section scroll-animate">
     <h2 class="testimonials-title">What Our Patients Say</h2>
     <div class="testimonials-grid">
-        <?php if (!empty($testimonials)): ?>
-            <?php foreach ($testimonials as $t): ?>
-            <div class="testimonial-card scroll-animate-service"
-                 onclick="openFullT(<?= htmlspecialchars(json_encode(['name'=>$t['patient_name'],'rating'=>(int)$t['rating'],'comment'=>$t['comment']]),ENT_QUOTES) ?>)">
-                <div class="testimonial-stars"><?= str_repeat('★',(int)$t['rating']).str_repeat('☆',5-(int)$t['rating']) ?></div>
-                <p class="testimonial-quote">"<?= htmlspecialchars($t['comment']) ?>"</p>
-                <p class="testimonial-author">- <?= htmlspecialchars($t['patient_name']) ?></p>
-            </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <p style="text-align:center;color:#94a3b8;grid-column:1/-1">No reviews yet. Be the first to leave one!</p>
-        <?php endif; ?>
-    </div>
-    <div class="testimonials-submit-wrap">
-        <?php if (empty($testimonial_success)): ?>
-        <button class="btn-leave-review" onclick="document.getElementById('reviewModal').classList.add('open')">
-            <i class="fa-solid fa-star"></i> Leave a Review
-        </button>
-        <?php else: ?>
-        <div class="review-submitted-msg">
-            <i class="fa-solid fa-circle-check" style="color:#22c55e;font-size:1.3rem;"></i>
-            <span><?= htmlspecialchars($testimonial_success) ?></span>
+        <div class="testimonial-card scroll-animate-service">
+            <div class="testimonial-stars">★★★★★</div> 
+            <p class="testimonial-quote">"Awesome doctor. She explains everything well and set your expectation before the process. The tooth extraction is also very cheap and my health card covered both cleaning and 2 pasta."</p>
+            <p class="testimonial-author">- Ramil Nardo</p>
         </div>
-        <?php endif; ?>
+        <div class="testimonial-card scroll-animate-service">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-quote">"The doc is good at explaining things regarding teeth and it's easy to use my health card here. I just need to schedule days for the appointment so the process goes quickly."</p>
+            <p class="testimonial-author">- Marvelous Advincula</p>
+        </div>
+        <div class="testimonial-card scroll-animate-service">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-quote">"Very professional, good dentist, very light-handed and affordable"</p>
+            <p class="testimonial-author">- いいえ</p>
+        </div>
     </div>
 </section>
-
-<!-- Review Submit Modal -->
-<div class="t-modal-overlay" id="reviewModal">
-    <div class="t-modal">
-        <h3><i class="fa-solid fa-star" style="color:#fcd34d"></i> Share Your Experience</h3>
-        <?php if (!empty($testimonial_success)): ?>
-            <div class="alert-success-review"><?= htmlspecialchars($testimonial_success) ?></div>
-        <?php endif; ?>
-        <?php if (!empty($testimonial_error)): ?>
-            <div class="alert-error-review"><?= htmlspecialchars($testimonial_error) ?></div>
-        <?php endif; ?>
-        <form method="POST">
-            <input type="hidden" name="testimonial_submit" value="1">
-            <label>Your Name</label>
-            <input type="text" name="patient_name" placeholder="e.g. Juan dela Cruz" required maxlength="100">
-            <label>Rating</label>
-            <div class="star-picker" id="starPicker">
-                <label data-val="1">★</label><label data-val="2">★</label>
-                <label data-val="3">★</label><label data-val="4">★</label>
-                <label data-val="5">★</label>
-            </div>
-            <input type="hidden" name="rating" id="ratingInput" value="0">
-            <label>Your Comment</label>
-            <textarea name="comment" rows="4" placeholder="Tell us about your experience..." required maxlength="1000"></textarea>
-            <div class="modal-actions">
-                <button type="button" class="btn-cancel-review" onclick="document.getElementById('reviewModal').classList.remove('open')">Cancel</button>
-                <button type="submit" class="btn-submit-review"><i class="fa-solid fa-paper-plane"></i> Submit Review</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Full Testimonial View Modal -->
-<div class="t-full-overlay" id="fullTModal">
-    <div class="t-full-modal">
-        <button class="close-btn" onclick="document.getElementById('fullTModal').classList.remove('open')">✕</button>
-        <div class="full-stars" id="fullStars"></div>
-        <p class="full-quote" id="fullQuote"></p>
-        <p class="full-author" id="fullAuthor"></p>
-    </div>
-</div>
-
-<script>
-function openFullT(d) {
-    document.getElementById('fullStars').textContent = '★'.repeat(d.rating)+'☆'.repeat(5-d.rating);
-    document.getElementById('fullQuote').textContent  = '"'+d.comment+'"';
-    document.getElementById('fullAuthor').textContent = '— '+d.name;
-    document.getElementById('fullTModal').classList.add('open');
-}
-document.getElementById('reviewModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
-document.getElementById('fullTModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
-// ── JS Star Picker ──
-(function(){
-    const picker=document.getElementById('starPicker');
-    const input=document.getElementById('ratingInput');
-    if(!picker)return;
-    const stars=Array.from(picker.querySelectorAll('label'));
-    let selected=0;
-    function highlight(n){stars.forEach((s,i)=>{s.classList.toggle('hovered',i<n);s.classList.toggle('selected',i<n);});}
-    stars.forEach((s,i)=>{
-        s.addEventListener('mouseenter',()=>highlight(i+1));
-        s.addEventListener('mouseleave',()=>highlight(selected));
-        s.addEventListener('click',()=>{selected=i+1;input.value=selected;highlight(selected);});
-    });
-})();
-</script>
 
 <section id="services" class="service-section scroll-animate">
     <h2>SERVICES</h2>
@@ -1887,25 +1710,10 @@ document.getElementById('fullTModal').addEventListener('click',function(e){if(e.
 <script>
 const isLoggedIn = <?= isset($_SESSION['user_name']) ? 'true' : 'false'; ?>;
 
-// ===== NO-ADMIN DETECTION =====
-// Poll every 5 seconds — kung wala nang admin sa DB, redirect sa register page
-(function pollNoAdmin() {
-  fetch('/miscellaneous/check_admin.php', { cache: 'no-store' })
-    .then(r => r.json())
-    .then(data => {
-      if (!data.has_admin) {
-        window.location.href = data.register_url || '/setup.php';
-      } else {
-        setTimeout(pollNoAdmin, 5000);
-      }
-    })
-    .catch(() => setTimeout(pollNoAdmin, 5000));
-})();
-
 // Listen for cross-tab logout
 window.addEventListener('storage', function(e) {
     if (e.key === 'logoutEvent' && isLoggedIn) {
-        showAlert('You have been logged out from another tab.');
+        alert('You have been logged out from another tab.');
         window.location.href = 'pconcio_main.php';
     }
 });
@@ -2032,13 +1840,16 @@ document.addEventListener('DOMContentLoaded', function () {
     if (openBtn) {
         openBtn.onclick = window.openLoginModal;
     }
+    
+
+    document
 
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function () {
             showConfirmDialog('Are you sure you want to logout?', function() {
                 window.location.href = 'logout.php';
-            }, { title: 'Logout', icon: 'logout', okText: 'Logout' });
+            }, { title: 'Logout', icon: '🚪', okText: 'Logout' });
         });
     }
 
@@ -2193,4 +2004,3 @@ function toggleLoginPasswordVisibility() {
 </script>
 
 </html>
-

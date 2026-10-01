@@ -33,7 +33,7 @@ header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-// Redirect to login
-header("Location: /login_main/login.php");
+// Redirect to main page (public landing with login modal)
+header("Location: /main_page/pconcio_main.php");
 exit;
 ?>

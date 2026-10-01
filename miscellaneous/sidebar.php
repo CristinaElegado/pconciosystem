@@ -658,7 +658,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 </div>
 
 <script>
-  let _sessionModalRedirectUrl = '/login_main/login.php';
+  let _sessionModalRedirectUrl = '/main_page/pconcio_main.php';
   let _sessionPollingActive = true;
 
   function sessionModalRedirect() {
@@ -694,10 +694,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
           if (modal) {
             document.getElementById('sessionModalTitle').textContent = 'Account Deleted';
             document.getElementById('sessionModalMessage').textContent = 'Your account has been removed from the system. You will be redirected to the login page.';
-            _sessionModalRedirectUrl = '/login_main/login.php';
+            _sessionModalRedirectUrl = '/main_page/pconcio_main.php';
             modal.classList.add('show');
           } else {
-            window.location.href = '/login_main/login.php';
+            window.location.href = '/main_page/pconcio_main.php';
           }
 
         } else if (data.reason === 'kicked') {
@@ -706,10 +706,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
           if (modal) {
             document.getElementById('sessionModalTitle').textContent = 'Logged In Elsewhere';
             document.getElementById('sessionModalMessage').textContent = 'Your account was logged in from another device or browser. You have been signed out of this session.';
-            _sessionModalRedirectUrl = '/login_main/login.php';
+            _sessionModalRedirectUrl = '/main_page/pconcio_main.php';
             modal.classList.add('show');
           } else {
-            window.location.href = '/login_main/login.php';
+            window.location.href = '/main_page/pconcio_main.php';
           }
 
         } else if (data.reason === 'no_session') {
@@ -718,7 +718,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
           _noSessionStrikes++;
           if (_noSessionStrikes >= 3) {
             _sessionPollingActive = false;
-            window.location.href = '/login_main/login.php';
+            window.location.href = '/main_page/pconcio_main.php';
           }
           // else: keep polling — session_restore.php will recover it
           return;

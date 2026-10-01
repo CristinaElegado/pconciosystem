@@ -4,7 +4,7 @@ include __DIR__ . '/../miscellaneous/database.php';
 
 // ── Guard: Admin only ──────────────────────────────────────────────────────
 if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
-    header('Location: /login_main/login.php');
+    header('Location: /main_page/pconcio_main.php');
     exit;
 }
 

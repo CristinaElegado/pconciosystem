@@ -102,7 +102,8 @@ try {
     }
 
 } catch (PDOException $e) {
-    echo json_encode(['valid' => false, 'reason' => 'error']);
+    // DB error — don't kick the user, just say valid to avoid false logouts
+    echo json_encode(['valid' => true]);
     exit;
 }
 

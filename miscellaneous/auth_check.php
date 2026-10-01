@@ -17,7 +17,7 @@ if (!isset($_SESSION['id']) || !isset($_SESSION['username']) || !isset($_SESSION
 if (!isset($_SESSION['id']) || !isset($_SESSION['username']) || !isset($_SESSION['user_type'])) {
     session_unset();
     session_destroy();
-    header("Location: /login_main/login.php");
+    header("Location: /main_page/pconcio_main.php");
     exit;
 }
 
@@ -51,6 +51,6 @@ if (!$userExists) {
     // I-clear ang session at i-redirect sa login
     session_unset();
     session_destroy();
-    header("Location: /login_main/login.php");
+    header("Location: /main_page/pconcio_main.php");
     exit;
 }
