@@ -27,11 +27,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['id'
 
     if ($action === 'approve') {
         $pdo->prepare("UPDATE testimonials SET is_approved = 1 WHERE id = :id")->execute(['id' => $id]);
-        logAudit($pdo, $_SESSION['id'], $_SESSION['username'], 'Approved Testimonial', "Testimonial ID: $id");
+        log_audit($pdo, $_SESSION['user_type'], $_SESSION['username'], 'Approved Testimonial', "Testimonial ID: $id");
         $toast = "Review approved and is now visible on the main page.";
     } elseif ($action === 'reject') {
         $pdo->prepare("DELETE FROM testimonials WHERE id = :id")->execute(['id' => $id]);
-        logAudit($pdo, $_SESSION['id'], $_SESSION['username'], 'Rejected Testimonial', "Testimonial ID: $id");
+        log_audit($pdo, $_SESSION['user_type'], $_SESSION['username'], 'Rejected Testimonial', "Testimonial ID: $id");
         $toast = "Review rejected and deleted.";
     }
 
