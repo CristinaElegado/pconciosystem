@@ -68,8 +68,8 @@
                         $xray_path = false;
 
                         $possible_paths = [
-                            "/Mariategue-DentalClinic/uploads/xrays/" . $xray_file,
-                            "/Mariategue-DentalClinic/uploads/" . $xray_file,
+                            "/uploads/xrays/" . $xray_file,
+                            "/uploads/" . $xray_file,
                         ];
 
                         foreach ($possible_paths as $p) {

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 include __DIR__ . '/../miscellaneous/database.php';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if ($id <= 0) { exit('Invalid ID'); }
@@ -20,7 +20,7 @@ $possibleFolders = [
     __DIR__ . '/uploads/hmo_ids/',
     __DIR__ . '/../uploads/',
     __DIR__ . '/uploads/',
-    $_SERVER['DOCUMENT_ROOT'] . '/Mariategue-DentalClinic/uploads/hmo_ids/',
+    $_SERVER['DOCUMENT_ROOT'] . '/uploads/hmo_ids/',
     $_SERVER['DOCUMENT_ROOT'] . '/uploads/hmo_ids/'
 ];
 

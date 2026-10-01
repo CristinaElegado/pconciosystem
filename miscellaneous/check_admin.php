@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * check_admin.php
  * Checks if at least one admin exists in the database.
@@ -14,7 +14,7 @@ try {
     if ($count === 0) {
         echo json_encode([
             'has_admin'    => false,
-            'register_url' => '/Mariategue-DentalClinic/setup.php'
+            'register_url' => '/setup.php'
         ]);
     } else {
         echo json_encode(['has_admin' => true]);

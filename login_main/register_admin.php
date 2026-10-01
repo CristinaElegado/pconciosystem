@@ -1,6 +1,6 @@
-<?php
+﻿<?php
 // Redirect to setup.php which has the proper UI
-header("Location: /Mariategue-DentalClinic/setup.php");
+header("Location: /setup.php");
 exit;
 
 // Kung may admin na, hindi dapat ma-access ang page na ito
@@ -8,7 +8,7 @@ $countStmt = $pdo->query("SELECT COUNT(*) FROM admin");
 $adminCount = (int) $countStmt->fetchColumn();
 
 if ($adminCount > 0) {
-    header("Location: /Mariategue-DentalClinic/login_main/login.php");
+    header("Location: /login_main/login.php");
     exit;
 }
 
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Double-check na wala pang admin (race condition protection)
             $recheck = $pdo->query("SELECT COUNT(*) FROM admin")->fetchColumn();
             if ($recheck > 0) {
-                header("Location: /Mariategue-DentalClinic/login_main/login.php");
+                header("Location: /login_main/login.php");
                 exit;
             }
 
@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-message success" id="successMsg"><?= htmlspecialchars($success) ?></div>
             <script>
                 setTimeout(() => {
-                    window.location.href = '/Mariategue-DentalClinic/login_main/login.php';
+                    window.location.href = '/login_main/login.php';
                 }, 2000);
             </script>
         <?php endif; ?>

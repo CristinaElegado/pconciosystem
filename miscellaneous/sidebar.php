@@ -340,7 +340,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 </div>
 
 <script>
-  let _sessionModalRedirectUrl = '/Mariategue-DentalClinic/login_main/login.php';
+  let _sessionModalRedirectUrl = '/login_main/login.php';
   let _sessionPollingActive = true;
 
   function sessionModalRedirect() {
@@ -349,7 +349,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
   }
 
   function showSessionModal(title, message, redirectUrl) {
-    _sessionPollingActive = false; // Stop further polls once modal is shown
+    _sessionPollingActive = false;
     _sessionModalRedirectUrl = redirectUrl;
     document.getElementById('sessionModalTitle').textContent = title;
     document.getElementById('sessionModalMessage').textContent = message;
@@ -359,30 +359,28 @@ $current_page = basename($_SERVER['PHP_SELF']);
   async function pollSession() {
     if (!_sessionPollingActive) return;
     try {
-      const res  = await fetch('/Mariategue-DentalClinic/miscellaneous/session_check.php', { cache: 'no-store' });
+      const res  = await fetch('/miscellaneous/session_check.php', { cache: 'no-store' });
       const data = await res.json();
 
       if (!data.valid) {
         _sessionPollingActive = false;
 
         if (data.reason === 'no_admin') {
-          // Admin deleted — redirect to register page immediately
-          window.location.href = data.register_url || '/Mariategue-DentalClinic/setup.php';
+          window.location.href = data.register_url || '/login_main/register_admin.php';
 
         } else if (data.reason === 'deleted') {
-          // Current user account deleted
           const modal = document.getElementById('sessionModal');
           if (modal) {
             document.getElementById('sessionModalTitle').textContent = 'Account Deleted';
             document.getElementById('sessionModalMessage').textContent = 'Your account has been removed from the system. You will be redirected to the login page.';
-            _sessionModalRedirectUrl = '/Mariategue-DentalClinic/login_main/login.php';
+            _sessionModalRedirectUrl = '/login_main/login.php';
             modal.classList.add('show');
           } else {
-            window.location.href = '/Mariategue-DentalClinic/login_main/login.php';
+            window.location.href = '/login_main/login.php';
           }
 
         } else if (data.reason === 'no_session') {
-          window.location.href = '/Mariategue-DentalClinic/login_main/login.php';
+          window.location.href = '/login_main/login.php';
         }
       }
     } catch (e) {

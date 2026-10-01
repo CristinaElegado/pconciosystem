@@ -1,4 +1,4 @@
-<table>
+﻿<table>
     <thead>
         <tr>
             <th>#</th>
@@ -67,10 +67,10 @@
                         $doc_root = $_SERVER['DOCUMENT_ROOT'];
 
                         // Naka-base na ito sa tamang folder name ng Laragon project mo: Mariategue-DentalClinic
-                        if (file_exists($doc_root . "/Mariategue-DentalClinic/uploads/xrays/" . $xray_file)) {
-                            $xray_path = "/Mariategue-DentalClinic/uploads/xrays/" . htmlspecialchars($xray_file);
-                        } elseif (file_exists($doc_root . "/Mariategue-DentalClinic/uploads/" . $xray_file)) {
-                            $xray_path = "/Mariategue-DentalClinic/uploads/" . htmlspecialchars($xray_file);
+                        if (file_exists($doc_root . "/uploads/xrays/" . $xray_file)) {
+                            $xray_path = "/uploads/xrays/" . htmlspecialchars($xray_file);
+                        } elseif (file_exists($doc_root . "/uploads/" . $xray_file)) {
+                            $xray_path = "/uploads/" . htmlspecialchars($xray_file);
                         } else {
                             $xray_path = false;
                         }

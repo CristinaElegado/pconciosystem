@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * auth_check.php
  * 
@@ -12,7 +12,7 @@
 if (!isset($_SESSION['id']) || !isset($_SESSION['username']) || !isset($_SESSION['user_type'])) {
     session_unset();
     session_destroy();
-    header("Location: /Mariategue-DentalClinic/login_main/login.php");
+    header("Location: /login_main/login.php");
     exit;
 }
 
@@ -46,6 +46,6 @@ if (!$userExists) {
     // I-clear ang session at i-redirect sa login
     session_unset();
     session_destroy();
-    header("Location: /Mariategue-DentalClinic/login_main/login.php");
+    header("Location: /login_main/login.php");
     exit;
 }

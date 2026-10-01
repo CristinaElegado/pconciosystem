@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // pconcio_main.php - Full fixed version with safe AJAX login JSON responses
 
 ob_start();
@@ -1950,11 +1950,11 @@ const isLoggedIn = <?= isset($_SESSION['user_name']) ? 'true' : 'false'; ?>;
 // ===== NO-ADMIN DETECTION =====
 // Poll every 5 seconds — kung wala nang admin sa DB, redirect sa register page
 (function pollNoAdmin() {
-  fetch('/Mariategue-DentalClinic/miscellaneous/check_admin.php', { cache: 'no-store' })
+  fetch('/miscellaneous/check_admin.php', { cache: 'no-store' })
     .then(r => r.json())
     .then(data => {
       if (!data.has_admin) {
-        window.location.href = data.register_url || '/Mariategue-DentalClinic/setup.php';
+        window.location.href = data.register_url || '/setup.php';
       } else {
         setTimeout(pollNoAdmin, 5000);
       }

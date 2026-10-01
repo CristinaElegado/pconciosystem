@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 include __DIR__ . '/../miscellaneous/database.php';
 include __DIR__ . '/../miscellaneous/log_audit.php';
@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             log_audit($pdo, 'admin', $admin['username'], 'Logged In', 'Admin successfully logged in.');
 
-            echo json_encode(['success' => true, 'redirect' => '/Mariategue-DentalClinic/patient_list/patient_list.php']);
+            echo json_encode(['success' => true, 'redirect' => '/patient_list/patient_list.php']);
             exit;
         } else {
             log_audit($pdo, 'admin', $admin['username'], 'Failed Login Attempt', 'Wrong password for admin email: ' . $Email);
@@ -46,7 +46,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             log_audit($pdo, 'dentist', $dentist['first_name'] . ' ' . $dentist['last_name'], 'Logged In', 'Dentist successfully logged in.');
 
-            echo json_encode(['success' => true, 'redirect' => '/Mariategue-DentalClinic/patient_list/patient_list.php']);
+            echo json_encode(['success' => true, 'redirect' => '/patient_list/patient_list.php']);
             exit;
         } else {
             log_audit($pdo, 'dentist', $dentist['first_name'] . ' ' . $dentist['last_name'], 'Failed Login Attempt', 'Wrong password for dentist email: ' . $Email);
@@ -67,7 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             log_audit($pdo, 'staff', $staff['first_name'] . ' ' . $staff['last_name'], 'Logged In', 'Staff successfully logged in.');
 
-            echo json_encode(['success' => true, 'redirect' => '/Mariategue-DentalClinic/patient_list/patient_list.php']);
+            echo json_encode(['success' => true, 'redirect' => '/patient_list/patient_list.php']);
             exit;
         } else {
             log_audit($pdo, 'staff', $staff['first_name'] . ' ' . $staff['last_name'], 'Failed Login Attempt', 'Wrong password for staff email: ' . $Email);
