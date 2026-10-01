@@ -27,6 +27,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     header('Content-Type: application/json');
 
+    // ── Detect real client IP (Railway sits behind a proxy) ──────────────────
+    function get_client_ip(): string {
+        foreach (['HTTP_CF_CONNECTING_IP','HTTP_X_FORWARDED_FOR','HTTP_X_REAL_IP','REMOTE_ADDR'] as $key) {
+            $val = $_SERVER[$key] ?? '';
+            if ($val === '') continue;
+            $ip = trim(explode(',', $val)[0]);
+            if (filter_var($ip, FILTER_VALIDATE_IP)) return $ip;
+        }
+        return '0.0.0.0';
+    }
+    $clientIp = get_client_ip();
+
     $stmt = $pdo->prepare("SELECT * FROM admin WHERE email = :email LIMIT 1");
     $stmt->execute(['email' => $Email]);
     $admin = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -35,21 +47,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($password === $admin['password']) {
             // ── Single-session block ──────────────────────────────────────────
             $pdo->exec("ALTER TABLE admin ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
-            $existingToken = $pdo->prepare("SELECT session_token FROM admin WHERE id = :id LIMIT 1");
+            $pdo->exec("ALTER TABLE admin ADD COLUMN IF NOT EXISTS login_ip       VARCHAR(45) NULL DEFAULT NULL");
+            $existingToken = $pdo->prepare("SELECT session_token, login_ip FROM admin WHERE id = :id LIMIT 1");
             $existingToken->execute(['id' => $admin['id']]);
             $tokenRow = $existingToken->fetch();
             if (!empty($tokenRow['session_token'])) {
-                echo json_encode(['success' => false, 'message' => '⚠️ This account is already logged in on another device. Please log out from that device first.']);
-                exit;
+                $loggedInIp = $tokenRow['login_ip'] ?? '';
+                if ($loggedInIp !== $clientIp) {
+                    echo json_encode(['success' => false, 'message' => "⚠️ This account is already logged in from IP $loggedInIp. Please log out from that device first."]);
+                    exit;
+                }
             }
             // ─────────────────────────────────────────────────────────────────
             $token = bin2hex(random_bytes(32));
-            $pdo->prepare("UPDATE admin SET session_token = :token WHERE id = :id")->execute(['token' => $token, 'id' => $admin['id']]);
+            $pdo->prepare("UPDATE admin SET session_token = :token, login_ip = :ip WHERE id = :id")->execute(['token' => $token, 'ip' => $clientIp, 'id' => $admin['id']]);
 
             $_SESSION['id'] = $admin['id'];
             $_SESSION['username'] = $admin['username'];
             $_SESSION['user_type'] = "admin";
             $_SESSION['session_token'] = $token;
+            $_SESSION['login_ip'] = $clientIp;
             setcookie('__st', $token, ['expires'=>time()+28800,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
 
             log_audit($pdo, 'admin', $admin['username'], 'Logged In', 'Admin successfully logged in.');
@@ -70,21 +87,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (password_verify($password, $dentist['password_hash'])) {
             // ── Single-session block ──────────────────────────────────────────
             $pdo->exec("ALTER TABLE dentist_accounts ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
-            $existingToken = $pdo->prepare("SELECT session_token FROM dentist_accounts WHERE id = :id LIMIT 1");
+            $pdo->exec("ALTER TABLE dentist_accounts ADD COLUMN IF NOT EXISTS login_ip       VARCHAR(45) NULL DEFAULT NULL");
+            $existingToken = $pdo->prepare("SELECT session_token, login_ip FROM dentist_accounts WHERE id = :id LIMIT 1");
             $existingToken->execute(['id' => $dentist['id']]);
             $tokenRow = $existingToken->fetch();
             if (!empty($tokenRow['session_token'])) {
-                echo json_encode(['success' => false, 'message' => '⚠️ This account is already logged in on another device. Please log out from that device first.']);
-                exit;
+                $loggedInIp = $tokenRow['login_ip'] ?? '';
+                if ($loggedInIp !== $clientIp) {
+                    echo json_encode(['success' => false, 'message' => "⚠️ This account is already logged in from IP $loggedInIp. Please log out from that device first."]);
+                    exit;
+                }
             }
             // ─────────────────────────────────────────────────────────────────
             $token = bin2hex(random_bytes(32));
-            $pdo->prepare("UPDATE dentist_accounts SET session_token = :token WHERE id = :id")->execute(['token' => $token, 'id' => $dentist['id']]);
+            $pdo->prepare("UPDATE dentist_accounts SET session_token = :token, login_ip = :ip WHERE id = :id")->execute(['token' => $token, 'ip' => $clientIp, 'id' => $dentist['id']]);
 
             $_SESSION['id'] = $dentist['id'];
             $_SESSION['username'] = $dentist['first_name'];
             $_SESSION['user_type'] = "dentist";
             $_SESSION['session_token'] = $token;
+            $_SESSION['login_ip'] = $clientIp;
             setcookie('__st', $token, ['expires'=>time()+28800,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
 
             log_audit($pdo, 'dentist', $dentist['first_name'] . ' ' . $dentist['last_name'], 'Logged In', 'Dentist successfully logged in.');
@@ -105,22 +127,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (password_verify($password, $staff['password_hash'])) {
             // ── Single-session block ──────────────────────────────────────────
             $pdo->exec("ALTER TABLE staff_accounts ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
-            $existingToken = $pdo->prepare("SELECT session_token FROM staff_accounts WHERE id = :id LIMIT 1");
+            $pdo->exec("ALTER TABLE staff_accounts ADD COLUMN IF NOT EXISTS login_ip       VARCHAR(45) NULL DEFAULT NULL");
+            $existingToken = $pdo->prepare("SELECT session_token, login_ip FROM staff_accounts WHERE id = :id LIMIT 1");
             $existingToken->execute(['id' => $staff['id']]);
             $tokenRow = $existingToken->fetch();
             if (!empty($tokenRow['session_token'])) {
-                echo json_encode(['success' => false, 'message' => '⚠️ This account is already logged in on another device. Please log out from that device first.']);
-                exit;
+                $loggedInIp = $tokenRow['login_ip'] ?? '';
+                if ($loggedInIp !== $clientIp) {
+                    echo json_encode(['success' => false, 'message' => "⚠️ This account is already logged in from IP $loggedInIp. Please log out from that device first."]);
+                    exit;
+                }
             }
             // ─────────────────────────────────────────────────────────────────
             $token = bin2hex(random_bytes(32));
-            $pdo->prepare("UPDATE staff_accounts SET session_token = :token WHERE id = :id")->execute(['token' => $token, 'id' => $staff['id']]);
+            $pdo->prepare("UPDATE staff_accounts SET session_token = :token, login_ip = :ip WHERE id = :id")->execute(['token' => $token, 'ip' => $clientIp, 'id' => $staff['id']]);
 
             $_SESSION['id'] = $staff['id'];
             $_SESSION['username'] = $staff['first_name'];
             $_SESSION['staff_id'] = $staff['staff_id'];
             $_SESSION['user_type'] = "staff";
             $_SESSION['session_token'] = $token;
+            $_SESSION['login_ip'] = $clientIp;
             setcookie('__st', $token, ['expires'=>time()+28800,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
 
             log_audit($pdo, 'staff', $staff['first_name'] . ' ' . $staff['last_name'], 'Logged In', 'Staff successfully logged in.');

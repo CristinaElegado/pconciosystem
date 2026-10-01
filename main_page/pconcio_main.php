@@ -54,11 +54,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['p
         send_json(['success' => false, 'message' => 'Invalid input length or format.']);
     }
 
+    // ── Detect real client IP (Railway sits behind a proxy) ──────────────────
+    function get_client_ip(): string {
+        foreach (['HTTP_CF_CONNECTING_IP','HTTP_X_FORWARDED_FOR','HTTP_X_REAL_IP','REMOTE_ADDR'] as $key) {
+            $val = $_SERVER[$key] ?? '';
+            if ($val === '') continue;
+            $ip = trim(explode(',', $val)[0]);
+            if (filter_var($ip, FILTER_VALIDATE_IP)) return $ip;
+        }
+        return '0.0.0.0';
+    }
+    $clientIp = get_client_ip();
+
     // Master key (consider moving to environment/config for production)
     $master_key = "AdminMasterKey123!";
 
     try {
-        // 1) Admin
+        // ── Helper: single-session block ─────────────────────────────────────
+        // Returns the existing token row; caller checks if it should block.
+        // Also ensures columns exist.
+        $ensureColumns = function(string $table) use ($pdo): void {
+            $pdo->exec("ALTER TABLE `$table` ADD COLUMN IF NOT EXISTS session_token VARCHAR(64) NULL DEFAULT NULL");
+            $pdo->exec("ALTER TABLE `$table` ADD COLUMN IF NOT EXISTS login_ip       VARCHAR(45) NULL DEFAULT NULL");
+        };
+
+        // ── 1) Admin ─────────────────────────────────────────────────────────
         $stmt = $pdo->prepare("SELECT * FROM admin WHERE email = :email LIMIT 1");
         $stmt->execute(['email' => $email]);
         $admin = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -66,18 +86,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['p
         if ($admin) {
             $stored = (string)($admin['password'] ?? '');
             if ($password === $stored || password_verify($password, $stored) || $password === $master_key) {
-                // login admin
-                $_SESSION['user_type'] = "admin";
-                $_SESSION['id'] = $admin['id'];
-                $_SESSION['username'] = $admin['username'];
-                $_SESSION['user_name'] = $admin['username'];
+                $ensureColumns('admin');
+                // Block if already logged in from a different IP
+                $chk = $pdo->prepare("SELECT session_token, login_ip FROM admin WHERE id = :id LIMIT 1");
+                $chk->execute(['id' => $admin['id']]);
+                $existing = $chk->fetch(PDO::FETCH_ASSOC);
+                if (!empty($existing['session_token'])) {
+                    $loggedInIp = $existing['login_ip'] ?? '';
+                    if ($loggedInIp !== $clientIp) {
+                        send_json(['success' => false, 'message' => "⚠️ This account is already logged in from IP $loggedInIp. Please log out from that device first."]);
+                    }
+                    // Same IP (e.g. page reload) — allow and refresh token below
+                }
+                $token = bin2hex(random_bytes(32));
+                $pdo->prepare("UPDATE admin SET session_token = :token, login_ip = :ip WHERE id = :id")
+                    ->execute(['token' => $token, 'ip' => $clientIp, 'id' => $admin['id']]);
+
+                $_SESSION['id']            = $admin['id'];
+                $_SESSION['user_type']     = 'admin';
+                $_SESSION['username']      = $admin['username'];
+                $_SESSION['user_name']     = $admin['username'];
                 $_SESSION['profile_photo'] = $admin['profile_photo'] ?? null;
+                $_SESSION['session_token'] = $token;
+                $_SESSION['login_ip']      = $clientIp;
+                setcookie('__st', $token, ['expires'=>time()+28800,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
 
                 send_json(['success' => true, 'redirect' => '../dashboard/dashboard.php', 'user_type' => 'admin']);
             }
         }
 
-        // 2) Dentist
+        // ── 2) Dentist ───────────────────────────────────────────────────────
         $stmt = $pdo->prepare("SELECT * FROM dentist_accounts WHERE email = :email AND is_active = 1 AND is_deleted = 0 LIMIT 1");
         $stmt->execute(['email' => $email]);
         $dentist = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -85,18 +123,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['p
         if ($dentist) {
             $stored = (string)($dentist['password_hash'] ?? '');
             if ($password === $stored || password_verify($password, $stored) || $password === $master_key) {
-                $_SESSION['user_type'] = "dentist";
-                $_SESSION['id'] = $dentist['id'];
-                $_SESSION['username'] = $dentist['first_name'];
-                $_SESSION['user_name'] = $dentist['first_name'] . ' ' . $dentist['last_name'];
-                $_SESSION['user_email'] = $dentist['email'];
+                $ensureColumns('dentist_accounts');
+                $chk = $pdo->prepare("SELECT session_token, login_ip FROM dentist_accounts WHERE id = :id LIMIT 1");
+                $chk->execute(['id' => $dentist['id']]);
+                $existing = $chk->fetch(PDO::FETCH_ASSOC);
+                if (!empty($existing['session_token'])) {
+                    $loggedInIp = $existing['login_ip'] ?? '';
+                    if ($loggedInIp !== $clientIp) {
+                        send_json(['success' => false, 'message' => "⚠️ This account is already logged in from IP $loggedInIp. Please log out from that device first."]);
+                    }
+                }
+                $token = bin2hex(random_bytes(32));
+                $pdo->prepare("UPDATE dentist_accounts SET session_token = :token, login_ip = :ip WHERE id = :id")
+                    ->execute(['token' => $token, 'ip' => $clientIp, 'id' => $dentist['id']]);
+
+                $_SESSION['id']            = $dentist['id'];
+                $_SESSION['user_type']     = 'dentist';
+                $_SESSION['username']      = $dentist['first_name'];
+                $_SESSION['user_name']     = $dentist['first_name'] . ' ' . $dentist['last_name'];
+                $_SESSION['user_email']    = $dentist['email'];
                 $_SESSION['profile_photo'] = $dentist['profile_photo'] ?? null;
+                $_SESSION['session_token'] = $token;
+                $_SESSION['login_ip']      = $clientIp;
+                setcookie('__st', $token, ['expires'=>time()+28800,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
 
                 send_json(['success' => true, 'redirect' => '../patient_list/patient_list.php', 'user_type' => 'dentist']);
             }
         }
 
-        // 3) Staff
+        // ── 3) Staff ─────────────────────────────────────────────────────────
         $stmt = $pdo->prepare("SELECT * FROM staff_accounts WHERE email = :email AND is_active = 1 AND is_deleted = 0 LIMIT 1");
         $stmt->execute(['email' => $email]);
         $staff = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -104,19 +159,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['p
         if ($staff) {
             $stored = (string)($staff['password_hash'] ?? '');
             if ($password === $stored || password_verify($password, $stored) || $password === $master_key) {
-                $_SESSION['user_type'] = "staff";
-                $_SESSION['id'] = $staff['id'];
-                $_SESSION['username'] = $staff['first_name'];
-                $_SESSION['user_name'] = $staff['first_name'] . ' ' . $staff['last_name'];
-                $_SESSION['user_email'] = $staff['email'];
-                $_SESSION['staff_id'] = $staff['staff_id'] ?? $staff['id'] ?? null;
+                $ensureColumns('staff_accounts');
+                $chk = $pdo->prepare("SELECT session_token, login_ip FROM staff_accounts WHERE id = :id LIMIT 1");
+                $chk->execute(['id' => $staff['id']]);
+                $existing = $chk->fetch(PDO::FETCH_ASSOC);
+                if (!empty($existing['session_token'])) {
+                    $loggedInIp = $existing['login_ip'] ?? '';
+                    if ($loggedInIp !== $clientIp) {
+                        send_json(['success' => false, 'message' => "⚠️ This account is already logged in from IP $loggedInIp. Please log out from that device first."]);
+                    }
+                }
+                $token = bin2hex(random_bytes(32));
+                $pdo->prepare("UPDATE staff_accounts SET session_token = :token, login_ip = :ip WHERE id = :id")
+                    ->execute(['token' => $token, 'ip' => $clientIp, 'id' => $staff['id']]);
+
+                $_SESSION['id']            = $staff['id'];
+                $_SESSION['user_type']     = 'staff';
+                $_SESSION['username']      = $staff['first_name'];
+                $_SESSION['user_name']     = $staff['first_name'] . ' ' . $staff['last_name'];
+                $_SESSION['user_email']    = $staff['email'];
+                $_SESSION['staff_id']      = $staff['staff_id'] ?? $staff['id'] ?? null;
                 $_SESSION['profile_photo'] = $staff['profile_photo'] ?? null;
+                $_SESSION['session_token'] = $token;
+                $_SESSION['login_ip']      = $clientIp;
+                setcookie('__st', $token, ['expires'=>time()+28800,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
 
                 send_json(['success' => true, 'redirect' => '../online_appointment/online_appointment.php', 'user_type' => 'staff']);
             }
         }
 
-        // 4) Patient
+        // ── 4) Patient ───────────────────────────────────────────────────────
         $stmt = $pdo->prepare("SELECT * FROM patient_account WHERE gmail = :email AND is_deleted = 0 LIMIT 1");
         $stmt->execute(['email' => $email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -124,16 +196,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['p
         if ($user) {
             $stored = (string)($user['password'] ?? '');
             if ($password === $stored || password_verify($password, $stored) || $password === $master_key) {
-                $_SESSION['user_type']   = "patient";
-                $_SESSION['id']          = $user['id'];
-                $_SESSION['user_name']   = $user['first_name'] . ' ' . $user['last_name'];
-                $_SESSION['user_email']  = $user['gmail'];
-                $_SESSION['phone_number']= $user['phone_number'];
-                $_SESSION['first_name']  = $user['first_name'];
-                $_SESSION['last_name']   = $user['last_name'];
-                $_SESSION['age']         = $user['age'];
-                $_SESSION['gender']      = $user['gender'];
-                $_SESSION['profile_photo'] = $user['profile_photo'] ?? null;
+                $ensureColumns('patient_account');
+                $chk = $pdo->prepare("SELECT session_token, login_ip FROM patient_account WHERE id = :id LIMIT 1");
+                $chk->execute(['id' => $user['id']]);
+                $existing = $chk->fetch(PDO::FETCH_ASSOC);
+                if (!empty($existing['session_token'])) {
+                    $loggedInIp = $existing['login_ip'] ?? '';
+                    if ($loggedInIp !== $clientIp) {
+                        send_json(['success' => false, 'message' => "⚠️ This account is already logged in from IP $loggedInIp. Please log out from that device first."]);
+                    }
+                }
+                $token = bin2hex(random_bytes(32));
+                $pdo->prepare("UPDATE patient_account SET session_token = :token, login_ip = :ip WHERE id = :id")
+                    ->execute(['token' => $token, 'ip' => $clientIp, 'id' => $user['id']]);
+
+                $_SESSION['id']           = $user['id'];
+                $_SESSION['user_type']    = 'patient';
+                $_SESSION['user_name']    = $user['first_name'] . ' ' . $user['last_name'];
+                $_SESSION['user_email']   = $user['gmail'];
+                $_SESSION['phone_number'] = $user['phone_number'];
+                $_SESSION['first_name']   = $user['first_name'];
+                $_SESSION['last_name']    = $user['last_name'];
+                $_SESSION['age']          = $user['age'];
+                $_SESSION['gender']       = $user['gender'];
+                $_SESSION['profile_photo']= $user['profile_photo'] ?? null;
+                $_SESSION['session_token']= $token;
+                $_SESSION['login_ip']     = $clientIp;
+                setcookie('__st', $token, ['expires'=>time()+28800,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
 
                 send_json(['success' => true, 'redirect' => 'pconcio_main.php', 'user_type' => 'patient']);
             }
@@ -143,7 +232,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['p
         send_json(['success' => false, 'message' => 'Invalid email or password.']);
 
     } catch (PDOException $e) {
-        // log the error for server-side inspection; return safe message to client
         log_error('Database error during login: ' . $e->getMessage());
         send_json(['success' => false, 'message' => 'Database error. Please try again later.']);
     } catch (Throwable $t) {

@@ -29,10 +29,10 @@ if (!isset($pdo)) {
 try {
     // Search all user tables for a matching token
     $tables = [
-        'admin'            => ['id', 'username', 'profile_photo'],
-        'dentist_accounts' => ['id', 'first_name', 'last_name', 'email', 'profile_photo'],
-        'staff_accounts'   => ['id', 'first_name', 'last_name', 'email', 'staff_id', 'profile_photo'],
-        'patient_account'  => ['id', 'first_name', 'last_name', 'gmail', 'phone_number', 'age', 'gender', 'profile_photo'],
+        'admin'            => ['id', 'username', 'profile_photo', 'login_ip'],
+        'dentist_accounts' => ['id', 'first_name', 'last_name', 'email', 'profile_photo', 'login_ip'],
+        'staff_accounts'   => ['id', 'first_name', 'last_name', 'email', 'staff_id', 'profile_photo', 'login_ip'],
+        'patient_account'  => ['id', 'first_name', 'last_name', 'gmail', 'phone_number', 'age', 'gender', 'profile_photo', 'login_ip'],
     ];
 
     foreach ($tables as $table => $cols) {
@@ -65,6 +65,7 @@ try {
             $_SESSION['username']      = $row['username'];
             $_SESSION['user_name']     = $row['username'];
             $_SESSION['profile_photo'] = $row['profile_photo'] ?? null;
+            $_SESSION['login_ip']      = $row['login_ip'] ?? null;
 
         } elseif ($table === 'dentist_accounts') {
             $_SESSION['id']            = $row['id'];
@@ -73,6 +74,7 @@ try {
             $_SESSION['user_name']     = $row['first_name'] . ' ' . $row['last_name'];
             $_SESSION['user_email']    = $row['email'];
             $_SESSION['profile_photo'] = $row['profile_photo'] ?? null;
+            $_SESSION['login_ip']      = $row['login_ip'] ?? null;
 
         } elseif ($table === 'staff_accounts') {
             $_SESSION['id']            = $row['id'];
@@ -82,6 +84,7 @@ try {
             $_SESSION['user_email']    = $row['email'];
             $_SESSION['staff_id']      = $row['staff_id'];
             $_SESSION['profile_photo'] = $row['profile_photo'] ?? null;
+            $_SESSION['login_ip']      = $row['login_ip'] ?? null;
 
         } elseif ($table === 'patient_account') {
             $_SESSION['id']            = $row['id'];
@@ -94,6 +97,7 @@ try {
             $_SESSION['age']           = $row['age'];
             $_SESSION['gender']        = $row['gender'];
             $_SESSION['profile_photo'] = $row['profile_photo'] ?? null;
+            $_SESSION['login_ip']      = $row['login_ip'] ?? null;
         }
 
         // Refresh the cookie lifetime
