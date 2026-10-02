@@ -416,11 +416,91 @@ $service_stmt = $pdo->prepare("
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Online Appointments</title>
     <link rel="stylesheet" href="../miscellaneous/sidebar_design.css">
-    <link rel="stylesheet" href="online_appointment_design.css">
+    <link rel="stylesheet" href="online_appointment_design.css?v=<?= time() ?>">
 
     <style>
         body {
             background-image: none !important;
+        }
+        /* Tab status button colors */
+        .btn-tab-pending   { background: #f59e0b !important; color: #fff !important; }
+        .btn-tab-approved  { background: #22c55e !important; color: #fff !important; }
+        .btn-tab-cancelled { background: #ef4444 !important; color: #fff !important; }
+        .btn-tab-pending:hover   { background: #d97706 !important; }
+        .btn-tab-approved:hover  { background: #16a34a !important; }
+        .btn-tab-cancelled:hover { background: #dc2626 !important; }
+
+        /* Search + filter bar: keep everything on one line */
+        .appt-filter-form {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .appt-search-wrap {
+            display: flex;
+            align-items: center;
+        }
+        .appt-search-wrap input {
+            padding: 0 10px;
+            border: 1px solid #ccc;
+            border-right: none;
+            border-radius: 4px 0 0 4px;
+            height: 38px;
+            box-sizing: border-box;
+            width: 300px;
+            font-size: 14px;
+        }
+        .appt-search-wrap button {
+            padding: 0 13px;
+            background: #0ea5e9;
+            color: #fff;
+            border: 1px solid #0ea5e9;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            height: 38px;
+            box-sizing: border-box;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .appt-filter-form select {
+            padding: 0 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            height: 38px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        .appt-filter-form .btn-filter-submit {
+            padding: 0 20px;
+            background: #0ea5e9;
+            color: #fff;
+            border: 1px solid #0ea5e9;
+            border-radius: 4px;
+            cursor: pointer;
+            height: 38px;
+            box-sizing: border-box;
+            font-weight: 500;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .appt-filter-form .btn-reset-link {
+            padding: 0 20px;
+            background: #64748b;
+            color: #fff;
+            text-decoration: none;
+            border: 1px solid #64748b;
+            border-radius: 4px;
+            height: 38px;
+            box-sizing: border-box;
+            font-weight: 500;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         .btn-add {
             height: 38px;
@@ -535,19 +615,19 @@ $service_stmt = $pdo->prepare("
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
         <div style="display: flex; gap: 5px;">
-            <button class="btn-add" onclick="showTab('pending')"   style="background:#f59e0b;">Pending</button>
-            <button class="btn-add" onclick="showTab('approved')"  style="background:#22c55e;">Approved</button>
-            <button class="btn-add" onclick="showTab('cancelled')" style="background:#ef4444;">Cancelled</button>
+            <button class="btn-add btn-tab-pending"   onclick="showTab('pending')">Pending</button>
+            <button class="btn-add btn-tab-approved"  onclick="showTab('approved')">Approved</button>
+            <button class="btn-add btn-tab-cancelled" onclick="showTab('cancelled')">Cancelled</button>
         </div>
         
-        <form method="GET" style="display: flex; gap: 10px; align-items: center;">
+        <form method="GET" class="appt-filter-form">
             <input type="hidden" name="tab" id="activeTabInput" value="<?= htmlspecialchars($activeTab) ?>">
-            <div style="display: flex; align-items: center;">
-                <input type="text" name="search" placeholder="Search..." value="<?= htmlspecialchars($search) ?>" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px 0 0 4px; border-right: none; height: 38px; box-sizing: border-box; width: 300px;">
-                <button type="submit" style="padding: 0 14px; background-color: #0ea5e9; color: white; border: 1px solid #0ea5e9; border-left: none; border-radius: 0 4px 4px 0; cursor: pointer; height: 38px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <div class="appt-search-wrap">
+                <input type="text" name="search" placeholder="Search..." value="<?= htmlspecialchars($search) ?>">
+                <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
             </div>
             
-            <select name="sort" id="sortSelect" onchange="updateSecondDropdown()" style="padding: 0 8px; border: 1px solid #ccc; border-radius: 4px; height: 38px; box-sizing: border-box;">
+            <select name="sort" id="sortSelect" onchange="updateSecondDropdown()">
                 <option value="created_at" <?= $sort === 'created_at' ? 'selected' : '' ?>>Date Created</option>
                 <option value="date_visit" <?= $sort === 'date_visit' ? 'selected' : '' ?>>Date Visit</option>
                 <option value="full_name" <?= $sort === 'full_name' ? 'selected' : '' ?>>Patient Name</option>
@@ -558,12 +638,12 @@ $service_stmt = $pdo->prepare("
                 <option value="payment_method" <?= $sort === 'payment_method' ? 'selected' : '' ?>>Payment Method</option>
                 <option value="service_name" <?= $sort === 'service_name' ? 'selected' : '' ?>>Service</option>
             </select>
-            <select name="order" id="orderSelect" style="padding: 0 8px; border: 1px solid #ccc; border-radius: 4px; min-width: 150px; height: 38px; box-sizing: border-box;">
+            <select name="order" id="orderSelect" style="min-width: 150px;">
             </select>
             
-            <button type="submit" style="padding: 0 20px; background-color: #0ea5e9; color: white; border: 1px solid #0ea5e9; border-radius: 4px; cursor: pointer; height: 38px; box-sizing: border-box; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle;">Filter</button>
+            <button type="submit" class="btn-filter-submit">Filter</button>
             <?php if($search || $sort !== 'created_at' || $order !== 'DESC'): ?>
-                <a href="online_appointment.php" style="padding: 0 20px; background-color: #64748b; color: white; text-decoration: none; border: 1px solid #64748b; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; height: 38px; box-sizing: border-box; font-weight: 500;">Reset</a>
+                <a href="online_appointment.php" class="btn-reset-link">Reset</a>
             <?php endif; ?>
         </form>
     </div>
