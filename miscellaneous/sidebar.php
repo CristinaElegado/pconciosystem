@@ -23,20 +23,17 @@ $current_page = basename($_SERVER['PHP_SELF']);
     
     <?php if (isset($_SESSION['user_type']) && $_SESSION['user_type'] === "admin"): ?>
         <div class="topbar-right">
-          <!-- Expiry Notification Bell (Admin) -->
+          <!-- General Notification Bell (Admin) -->
           <div class="notif-bell-wrapper" id="notifBellWrapper">
-            <i class="fa-solid fa-bell notif-bell-icon" id="notifBellIcon" onclick="toggleNotifDropdown()" title="Inventory Expiry Alerts"></i>
+            <i class="fa-solid fa-bell notif-bell-icon" id="notifBellIcon" onclick="toggleNotifDropdown()" title="Notifications"></i>
             <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
             <div class="notif-dropdown" id="notifDropdown">
               <div class="notif-dropdown-header">
-                <i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i>
-                Inventory Expiry Alerts
+                <i class="fa-solid fa-bell"></i>
+                Notifications
               </div>
               <div id="notifDropdownBody" class="notif-dropdown-body">
-                <div class="notif-loading">Loading...</div>
-              </div>
-              <div class="notif-dropdown-footer">
-                <a href="../inventory/inventory.php">View Inventory</a>
+                <div class="notif-loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>
               </div>
             </div>
           </div>
@@ -46,20 +43,17 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
     <?php elseif (isset($_SESSION['user_type']) && $_SESSION['user_type'] === "staff"): ?>
         <div class="topbar-right">
-          <!-- Expiry Notification Bell (Staff) -->
+          <!-- General Notification Bell (Staff) -->
           <div class="notif-bell-wrapper" id="notifBellWrapper">
-            <i class="fa-solid fa-bell notif-bell-icon" id="notifBellIcon" onclick="toggleNotifDropdown()" title="Inventory Expiry Alerts"></i>
+            <i class="fa-solid fa-bell notif-bell-icon" id="notifBellIcon" onclick="toggleNotifDropdown()" title="Notifications"></i>
             <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
             <div class="notif-dropdown" id="notifDropdown">
               <div class="notif-dropdown-header">
-                <i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i>
-                Inventory Expiry Alerts
+                <i class="fa-solid fa-bell"></i>
+                Notifications
               </div>
               <div id="notifDropdownBody" class="notif-dropdown-body">
-                <div class="notif-loading">Loading...</div>
-              </div>
-              <div class="notif-dropdown-footer">
-                <a href="../inventory/inventory.php">View Inventory</a>
+                <div class="notif-loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>
               </div>
             </div>
           </div>
@@ -310,9 +304,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
     position: absolute;
     top: calc(100% + 10px);
     right: 0;
-    width: 320px;
+    width: 340px;
     background: #fff;
-    border-radius: 12px;
+    border-radius: 14px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.18);
     z-index: 99999;
     overflow: hidden;
@@ -325,99 +319,140 @@ $current_page = basename($_SERVER['PHP_SELF']);
     from { opacity: 0; transform: translateY(-8px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+  /* Main header */
   .notif-dropdown-header {
-    background: #0ea5e9;
+    background: linear-gradient(135deg, #0ea5e9, #0369a1);
     color: #fff;
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     font-weight: 600;
-    padding: 12px 16px;
+    padding: 13px 16px;
     display: flex;
     align-items: center;
     gap: 8px;
     font-family: Poppins, sans-serif;
   }
+  /* Scrollable body */
   .notif-dropdown-body {
-    max-height: 320px;
+    max-height: 400px;
     overflow-y: auto;
-    padding: 6px 0;
   }
+  /* Section header inside body */
+  .notif-section-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 14px 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #64748b;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    border-top: 1px solid #e2e8f0;
+    font-family: Poppins, sans-serif;
+    margin-top: 0;
+  }
+  .notif-section-header:first-child { border-top: none; }
+  .notif-section-count {
+    margin-left: auto;
+    background: #e0f2fe;
+    color: #0369a1;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 999px;
+  }
+  /* Section footer link */
+  .notif-section-footer {
+    padding: 7px 16px 10px;
+    text-align: right;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .notif-section-footer a {
+    color: #0ea5e9;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-decoration: none;
+    font-family: Poppins, sans-serif;
+  }
+  .notif-section-footer a:hover { text-decoration: underline; }
+  /* Individual item */
   .notif-item {
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    padding: 10px 16px;
+    padding: 10px 14px;
     border-bottom: 1px solid #f1f5f9;
     transition: background 0.15s;
-    cursor: default;
+    cursor: pointer;
+    text-decoration: none;
   }
   .notif-item:last-child { border-bottom: none; }
-  .notif-item:hover { background: #f8fafc; }
+  .notif-item:hover { background: #f0f9ff; }
   .notif-item-icon {
     flex-shrink: 0;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.95rem;
-    margin-top: 2px;
+    margin-top: 1px;
   }
   .notif-item-icon.expired   { background: #fee2e2; color: #ef4444; }
   .notif-item-icon.expiring  { background: #fef3c7; color: #f59e0b; }
-  .notif-item-text { flex: 1; }
+  .notif-item-icon.review    { background: #ede9fe; color: #7c3aed; }
+  .notif-item-text { flex: 1; min-width: 0; }
   .notif-item-name {
-    font-size: 0.85rem;
+    font-size: 0.84rem;
     font-weight: 600;
     color: #1e293b;
     font-family: Poppins, sans-serif;
     line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .notif-item-detail {
-    font-size: 0.78rem;
+    font-size: 0.77rem;
     color: #64748b;
     margin-top: 2px;
     font-family: Poppins, sans-serif;
   }
-  .notif-item-status {
-    font-size: 0.72rem;
+  .notif-item-badge {
+    font-size: 0.7rem;
     font-weight: 700;
     padding: 2px 7px;
     border-radius: 999px;
     margin-top: 4px;
     display: inline-block;
   }
-  .notif-item-status.expired  { background: #fee2e2; color: #ef4444; }
-  .notif-item-status.expiring { background: #fef3c7; color: #b45309; }
-  .notif-empty {
+  .notif-item-badge.expired   { background: #fee2e2; color: #ef4444; }
+  .notif-item-badge.expiring  { background: #fef3c7; color: #b45309; }
+  .notif-item-badge.review    { background: #ede9fe; color: #6d28d9; }
+  /* All-clear empty state */
+  .notif-all-clear {
     text-align: center;
-    padding: 24px 16px;
+    padding: 32px 16px;
     color: #94a3b8;
     font-size: 0.85rem;
     font-family: Poppins, sans-serif;
   }
-  .notif-empty i { font-size: 1.8rem; display: block; margin-bottom: 8px; color: #cbd5e1; }
+  .notif-all-clear i { font-size: 2rem; display: block; margin-bottom: 10px; color: #22c55e; }
+  .notif-all-clear strong { display: block; color: #475569; margin-bottom: 4px; }
   .notif-loading {
     text-align: center;
-    padding: 20px;
+    padding: 24px;
     color: #94a3b8;
     font-size: 0.85rem;
     font-family: Poppins, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
   }
-  .notif-dropdown-footer {
-    padding: 10px 16px;
-    background: #f8fafc;
-    border-top: 1px solid #e2e8f0;
-    text-align: center;
-  }
-  .notif-dropdown-footer a {
-    color: #0ea5e9;
-    font-size: 0.82rem;
-    font-weight: 600;
-    text-decoration: none;
-    font-family: Poppins, sans-serif;
-  }
-  .notif-dropdown-footer a:hover { text-decoration: underline; }
 </style>
 
 <script>
@@ -511,21 +546,21 @@ $current_page = basename($_SERVER['PHP_SELF']);
     refreshBtn.addEventListener('click', doSilentRefresh);
   }
 
-  // ====== EXPIRY NOTIFICATION BELL ======
-  function fetchExpiryNotifications() {
-    const badge   = document.getElementById('notifBadge');
-    const bell    = document.getElementById('notifBellIcon');
-    const body    = document.getElementById('notifDropdownBody');
+  // ====== GENERAL NOTIFICATION BELL ======
+  function fetchNotifications() {
+    const badge = document.getElementById('notifBadge');
+    const bell  = document.getElementById('notifBellIcon');
+    const body  = document.getElementById('notifDropdownBody');
     if (!badge || !bell || !body) return;
 
-    fetch('/miscellaneous/get_expiry_notifications.php', { cache: 'no-store' })
+    fetch('/miscellaneous/get_notifications.php', { cache: 'no-store' })
       .then(r => r.json())
       .then(data => {
-        const count = data.count || 0;
+        const total = data.total || 0;
 
         // Update badge
-        if (count > 0) {
-          badge.textContent = count > 99 ? '99+' : count;
+        if (total > 0) {
+          badge.textContent = total > 99 ? '99+' : total;
           badge.style.display = 'flex';
           bell.classList.add('notif-has-alerts');
         } else {
@@ -533,29 +568,47 @@ $current_page = basename($_SERVER['PHP_SELF']);
           bell.classList.remove('notif-has-alerts');
         }
 
-        // Build dropdown items
-        if (!data.items || data.items.length === 0) {
-          body.innerHTML = '<div class="notif-empty"><i class="fa-solid fa-circle-check"></i>No expiry alerts. All items are good!</div>';
+        // No notifications at all
+        if (!data.sections || data.sections.length === 0) {
+          body.innerHTML = `
+            <div class="notif-all-clear">
+              <i class="fa-solid fa-circle-check"></i>
+              <strong>All clear!</strong>
+              No pending notifications right now.
+            </div>`;
           return;
         }
 
+        // Build sections
         let html = '';
-        data.items.forEach(function(item) {
-          const isExpired  = item.status === 'EXPIRED';
-          const iconClass  = isExpired ? 'expired'  : 'expiring';
-          const icon       = isExpired ? 'fa-skull-crossbones' : 'fa-clock';
+        data.sections.forEach(function(section) {
           html += `
-            <div class="notif-item">
-              <div class="notif-item-icon ${iconClass}">
-                <i class="fa-solid ${icon}"></i>
-              </div>
-              <div class="notif-item-text">
-                <div class="notif-item-name">${item.item_name}</div>
-                <div class="notif-item-detail">Exp: ${item.expiration_date} &bull; Qty: ${item.quantity}</div>
-                <span class="notif-item-status ${iconClass}">${item.status}</span>
-              </div>
+            <div class="notif-section-header">
+              <i class="fa-solid ${section.icon}" style="color:${section.icon_color};font-size:.85rem;"></i>
+              ${section.label}
+              <span class="notif-section-count">${section.count}</span>
+            </div>`;
+
+          section.items.forEach(function(item) {
+            html += `
+              <a class="notif-item" href="${item.link}">
+                <div class="notif-item-icon ${item.color}">
+                  <i class="fa-solid ${item.icon}"></i>
+                </div>
+                <div class="notif-item-text">
+                  <div class="notif-item-name">${item.title}</div>
+                  <div class="notif-item-detail">${item.detail}</div>
+                  <span class="notif-item-badge ${item.color}">${item.badge}</span>
+                </div>
+              </a>`;
+          });
+
+          html += `
+            <div class="notif-section-footer">
+              <a href="${section.footer_link}">${section.footer_text} →</a>
             </div>`;
         });
+
         body.innerHTML = html;
       })
       .catch(function() {
@@ -569,7 +622,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
     if (!dropdown) return;
     const isOpen = dropdown.classList.contains('open');
     dropdown.classList.toggle('open', !isOpen);
-    if (!isOpen) fetchExpiryNotifications(); // Always refresh on open
+    if (!isOpen) fetchNotifications(); // Always refresh on open
   }
 
   // Close dropdown when clicking outside the bell wrapper
@@ -583,8 +636,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
   // Initial fetch on page load + re-poll every 60 seconds
   document.addEventListener('DOMContentLoaded', function() {
-    fetchExpiryNotifications();
-    setInterval(fetchExpiryNotifications, 60000);
+    fetchNotifications();
+    setInterval(fetchNotifications, 60000);
   });
 </script>
 
