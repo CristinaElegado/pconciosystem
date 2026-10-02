@@ -37,6 +37,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'email'    => $email,
             'password' => $password,
         ]);
+
+        // Clear any existing session and cookies so old sessions don't interfere
+        $_SESSION = [];
+        session_destroy();
+        if (isset($_COOKIE['__st'])) {
+            setcookie('__st', '', ['expires' => time() - 3600, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Lax']);
+        }
+
         $success = 'Admin account created! Redirecting to login...';
     }
 }
