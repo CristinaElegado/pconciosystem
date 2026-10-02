@@ -27,105 +27,12 @@ body {
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+  margin-bottom: 15px;
   transition: background 0.2s ease;
 }
 
 .btn-add:hover {
   background: #0284c7;
-}
-
-/* Tab status buttons */
-.tab-btn {
-  color: #fff;
-  padding: 8px 18px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  height: 38px;
-  box-sizing: border-box;
-  transition: opacity 0.2s ease;
-}
-.tab-btn:hover { opacity: 0.85; }
-.tab-btn.pending   { background: #f59e0b; }
-.tab-btn.approved  { background: #22c55e; }
-.tab-btn.cancelled { background: #ef4444; }
-
-/* Search + filter bar */
-.filter-bar {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.filter-bar .search-group {
-  display: flex;
-  align-items: center;
-}
-.filter-bar .search-group input {
-  padding: 0 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px 0 0 6px;
-  border-right: none;
-  height: 38px;
-  box-sizing: border-box;
-  width: 240px;
-  font-size: 14px;
-  outline: none;
-}
-.filter-bar .search-group button {
-  padding: 0 13px;
-  background: #0ea5e9;
-  color: #fff;
-  border: 1px solid #0ea5e9;
-  border-radius: 0 6px 6px 0;
-  cursor: pointer;
-  height: 38px;
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-}
-.filter-bar select {
-  padding: 0 8px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  height: 38px;
-  box-sizing: border-box;
-  font-size: 14px;
-  min-width: 140px;
-}
-.filter-bar .btn-filter {
-  padding: 0 20px;
-  background: #0ea5e9;
-  color: #fff;
-  border: 1px solid #0ea5e9;
-  border-radius: 6px;
-  cursor: pointer;
-  height: 38px;
-  box-sizing: border-box;
-  font-size: 14px;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.filter-bar .btn-reset {
-  padding: 0 20px;
-  background: #64748b;
-  color: #fff;
-  text-decoration: none;
-  border: 1px solid #64748b;
-  border-radius: 6px;
-  height: 38px;
-  box-sizing: border-box;
-  font-size: 14px;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .table-wrapper {
