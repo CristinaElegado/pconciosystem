@@ -8,12 +8,11 @@ $adminCount = $stmt->fetchColumn();
 
 // If admin already exists, redirect to login
 if ($adminCount > 0) {
-    header("Location: login_main/login.php");
+    header("Location: /login_main/login.php");
     exit;
 }
 
 $error = '';
-$success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
@@ -45,7 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             setcookie('__st', '', ['expires' => time() - 3600, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Lax']);
         }
 
-        $success = 'Admin account created! Redirecting to login...';
+        header("Location: /login_main/login.php?setup=1");
+        exit;
     }
 }
 ?>
@@ -249,14 +249,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="alert error"><i class="fas fa-circle-exclamation"></i> <?php echo htmlspecialchars($error); ?></div>
     <?php endif; ?>
 
-    <?php if ($success): ?>
-      <div class="alert success" id="successAlert"><i class="fas fa-circle-check"></i> <?php echo htmlspecialchars($success); ?></div>
-      <script>
-        setTimeout(() => { window.location.href = 'login_main/login.php'; }, 2000);
-      </script>
-    <?php endif; ?>
-
-    <?php if (!$success): ?>
+    <?php if (!$error): ?>
     <form method="POST" autocomplete="off">
 
       <div class="form-group">

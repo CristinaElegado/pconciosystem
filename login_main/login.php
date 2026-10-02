@@ -216,6 +216,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <h2>Login</h2>
     <div id="loginMessage" class="form-message"></div>
 
+    <?php if (isset($_GET['setup'])): ?>
+    <div class="form-message success" style="display:flex;align-items:center;gap:8px;">
+        <i class="fas fa-circle-check"></i> Admin account created! Please log in.
+    </div>
+    <?php endif; ?>
+
     <form method="POST" id="loginForm">
         <label>Email:</label>
         <input type="text" name="email" id="email" required>
