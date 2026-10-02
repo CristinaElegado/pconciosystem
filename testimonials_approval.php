@@ -159,14 +159,13 @@ $approved = $pdo->query("SELECT * FROM testimonials WHERE is_approved = 1 ORDER 
                         <input type="hidden" name="id" value="<?= $r['id'] ?>">
                         <button type="submit" class="btn-approve"><i class="fa-solid fa-check"></i> Approve</button>
                     </form>
-                    <form method="POST" style="display:inline">
+                    <form method="POST" style="display:inline" id="reject-form-<?= $r['id'] ?>">
                         <input type="hidden" name="action" value="reject">
                         <input type="hidden" name="id" value="<?= $r['id'] ?>">
                         <button type="button" class="btn-reject"
                             onclick="showConfirmDialog('Reject and delete this review from <?= htmlspecialchars(addslashes($r['patient_name'])) ?>?', function(){ document.getElementById('reject-form-<?= $r['id'] ?>').submit(); }, { title: 'Reject Review', icon: 'danger', okText: 'Yes, Reject' })">
                             <i class="fa-solid fa-xmark"></i> Reject
                         </button>
-                        <input type="submit" id="reject-form-<?= $r['id'] ?>" style="display:none">
                     </form>
                 </div>
             </div>
@@ -192,14 +191,13 @@ $approved = $pdo->query("SELECT * FROM testimonials WHERE is_approved = 1 ORDER 
                 <div class="review-date"><?= htmlspecialchars($r['submitted_at']) ?></div>
                 <div class="review-comment">"<?= htmlspecialchars($r['comment']) ?>"</div>
                 <div class="review-actions">
-                    <form method="POST" style="display:inline">
+                    <form method="POST" style="display:inline" id="reject-form-<?= $r['id'] ?>">
                         <input type="hidden" name="action" value="reject">
                         <input type="hidden" name="id" value="<?= $r['id'] ?>">
                         <button type="button" class="btn-delete"
                             onclick="showConfirmDialog('Remove this approved review from <?= htmlspecialchars(addslashes($r['patient_name'])) ?>? It will no longer show on the main page.', function(){ document.getElementById('reject-form-<?= $r['id'] ?>').submit(); }, { title: 'Remove Review', icon: 'warning', okText: 'Yes, Remove' })">
                             <i class="fa-solid fa-trash"></i> Remove
                         </button>
-                        <input type="submit" id="reject-form-<?= $r['id'] ?>" style="display:none">
                     </form>
                 </div>
             </div>
