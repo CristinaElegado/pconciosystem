@@ -471,6 +471,7 @@ $service_stmt = $pdo->prepare("
             height: 38px;
             box-sizing: border-box;
             font-size: 14px;
+            width: auto;
         }
         .appt-filter-form .btn-filter-submit {
             padding: 0 20px;
@@ -613,20 +614,17 @@ $service_stmt = $pdo->prepare("
 <div class="main-content">
     <h2 id="pageTitle">Online Appointments</h2>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-        <div style="display: flex; gap: 5px;">
-            <button class="btn-add btn-tab-pending"   onclick="showTab('pending')">Pending</button>
-            <button class="btn-add btn-tab-approved"  onclick="showTab('approved')">Approved</button>
-            <button class="btn-add btn-tab-cancelled" onclick="showTab('cancelled')">Cancelled</button>
-        </div>
-        
-        <form method="GET" class="appt-filter-form">
+    <div style="display: flex; align-items: center; margin-bottom: 15px; gap: 8px; flex-wrap: wrap;">
+        <button class="btn-add btn-tab-pending"   onclick="showTab('pending')">Pending</button>
+        <button class="btn-add btn-tab-approved"  onclick="showTab('approved')">Approved</button>
+        <button class="btn-add btn-tab-cancelled" onclick="showTab('cancelled')">Cancelled</button>
+
+        <form method="GET" class="appt-filter-form" style="display:contents;">
             <input type="hidden" name="tab" id="activeTabInput" value="<?= htmlspecialchars($activeTab) ?>">
             <div class="appt-search-wrap">
                 <input type="text" name="search" placeholder="Search..." value="<?= htmlspecialchars($search) ?>">
                 <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
             </div>
-            
             <select name="sort" id="sortSelect" onchange="updateSecondDropdown()">
                 <option value="created_at" <?= $sort === 'created_at' ? 'selected' : '' ?>>Date Created</option>
                 <option value="date_visit" <?= $sort === 'date_visit' ? 'selected' : '' ?>>Date Visit</option>
@@ -638,9 +636,7 @@ $service_stmt = $pdo->prepare("
                 <option value="payment_method" <?= $sort === 'payment_method' ? 'selected' : '' ?>>Payment Method</option>
                 <option value="service_name" <?= $sort === 'service_name' ? 'selected' : '' ?>>Service</option>
             </select>
-            <select name="order" id="orderSelect" style="min-width: 150px;">
-            </select>
-            
+            <select name="order" id="orderSelect" style="min-width:140px; height:38px; padding:0 8px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box; font-size:14px;"></select>
             <button type="submit" class="btn-filter-submit">Filter</button>
             <?php if($search || $sort !== 'created_at' || $order !== 'DESC'): ?>
                 <a href="online_appointment.php" class="btn-reset-link">Reset</a>
