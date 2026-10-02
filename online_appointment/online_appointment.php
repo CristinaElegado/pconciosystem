@@ -535,16 +535,16 @@ $service_stmt = $pdo->prepare("
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
         <div style="display: flex; gap: 5px;">
-            <button class="btn-add" onclick="showTab('pending')">Pending</button>
-            <button class="btn-add" onclick="showTab('approved')">Approved</button>
-            <button class="btn-add" onclick="showTab('cancelled')">Cancelled</button>
+            <button class="btn-add" onclick="showTab('pending')"   style="background:#f59e0b;">Pending</button>
+            <button class="btn-add" onclick="showTab('approved')"  style="background:#22c55e;">Approved</button>
+            <button class="btn-add" onclick="showTab('cancelled')" style="background:#ef4444;">Cancelled</button>
         </div>
         
         <form method="GET" style="display: flex; gap: 10px; align-items: center;">
             <input type="hidden" name="tab" id="activeTabInput" value="<?= htmlspecialchars($activeTab) ?>">
-            <div style="display: flex;">
+            <div style="display: flex; align-items: center;">
                 <input type="text" name="search" placeholder="Search..." value="<?= htmlspecialchars($search) ?>" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px 0 0 4px; border-right: none; height: 38px; box-sizing: border-box; width: 300px;">
-                <button type="submit" style="padding: 0 12px; background-color: #0ea5e9; color: white; border: 1px solid #0ea5e9; border-radius: 0 4px 4px 0; cursor: pointer; height: 38px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <button type="submit" style="padding: 0 14px; background-color: #0ea5e9; color: white; border: 1px solid #0ea5e9; border-left: none; border-radius: 0 4px 4px 0; cursor: pointer; height: 38px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;"><i class="fa-solid fa-magnifying-glass"></i></button>
             </div>
             
             <select name="sort" id="sortSelect" onchange="updateSecondDropdown()" style="padding: 0 8px; border: 1px solid #ccc; border-radius: 4px; height: 38px; box-sizing: border-box;">
@@ -561,7 +561,7 @@ $service_stmt = $pdo->prepare("
             <select name="order" id="orderSelect" style="padding: 0 8px; border: 1px solid #ccc; border-radius: 4px; min-width: 150px; height: 38px; box-sizing: border-box;">
             </select>
             
-            <button type="submit" style="padding: 0 20px; background-color: #0ea5e9; color: white; border: 1px solid #0ea5e9; border-radius: 4px; cursor: pointer; height: 38px; box-sizing: border-box; font-weight: 500; display: inline-flex; align-items: center; justify-content: center;">Filter</button>
+            <button type="submit" style="padding: 0 20px; background-color: #0ea5e9; color: white; border: 1px solid #0ea5e9; border-radius: 4px; cursor: pointer; height: 38px; box-sizing: border-box; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle;">Filter</button>
             <?php if($search || $sort !== 'created_at' || $order !== 'DESC'): ?>
                 <a href="online_appointment.php" style="padding: 0 20px; background-color: #64748b; color: white; text-decoration: none; border: 1px solid #64748b; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; height: 38px; box-sizing: border-box; font-weight: 500;">Reset</a>
             <?php endif; ?>
