@@ -28,6 +28,7 @@ $tables_to_truncate = [
     'dentist_time_schedules',
     'dentist_accounts',
     'audit_log',
+    'testimonials',
 ];
 
 // Tables to back up before truncating (we snapshot everything that will be cleared)
